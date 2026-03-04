@@ -1378,6 +1378,11 @@ async function init() {
 }
 
 init();
+
+// expose to global scope (needed because of type="module")
+window.App = App;
+window.Router = Router;
+window.Toast = Toast;
 </script>
 </body>
 </html>
