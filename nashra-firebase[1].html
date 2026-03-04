@@ -1,0 +1,1383 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="النشرة">
+<meta name="theme-color" content="#0d0d0d">
+<title>النشرة</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0d0d0d;--bg2:#141414;--bg3:#1c1c1c;--border:#2a2a2a;--border2:#333;
+  --text:#f0ede8;--muted:#666;--muted2:#444;--accent:#c8a96e;
+  --accent-dim:rgba(200,169,110,0.12);--accent-glow:rgba(200,169,110,0.25);
+  --team-a:#4a9eff;--team-a-dim:rgba(74,158,255,0.12);
+  --team-b:#ff6b6b;--team-b-dim:rgba(255,107,107,0.12);
+  --green:#4ade80;--safe:env(safe-area-inset-bottom,0px);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{height:100%}
+body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min-height:100%;max-width:430px;margin:0 auto;overflow-x:hidden}
+.t-small{font-size:.8rem;font-weight:500;color:var(--muted)}
+.page{display:none;min-height:100svh;flex-direction:column}
+.page.active{display:flex}
+.page-content{flex:1;padding:0 16px;padding-bottom:calc(16px + var(--safe))}
+.header{position:sticky;top:0;z-index:100;background:rgba(13,13,13,.9);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:14px 16px;display:flex;align-items:center;gap:12px}
+.header-title{font-size:1.1rem;font-weight:800;flex:1}
+.back-btn{width:36px;height:36px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;cursor:pointer;flex-shrink:0;transition:all .15s}
+.back-btn:active{background:var(--border);transform:scale(.95)}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:52px;border:none;border-radius:14px;font-family:'Tajawal',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;transition:all .15s;user-select:none}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:var(--accent);color:#000}
+.btn-primary:active{background:#d4b87a}
+.btn-secondary{background:var(--bg3);color:var(--text);border:1px solid var(--border2)}
+.btn-secondary:active{background:var(--border)}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}
+.btn-danger{background:rgba(255,107,107,.15);color:#ff6b6b;border:1px solid rgba(255,107,107,.3)}
+.btn-danger:active{background:rgba(255,107,107,.25)}
+.btn-sm{min-height:40px;font-size:.9rem;border-radius:10px}
+#home-hero{padding:48px 16px 32px;display:flex;flex-direction:column;align-items:flex-start}
+.hero-logo{font-size:1rem;font-weight:700;color:var(--accent);letter-spacing:3px;text-transform:uppercase;margin-bottom:16px}
+.hero-title{font-size:4rem;font-weight:900;line-height:.9;margin-bottom:8px}
+.hero-sub{color:var(--muted);font-size:.9rem;margin-bottom:40px}
+.home-actions{display:flex;flex-direction:column;gap:10px;width:100%}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:18px;overflow:hidden}
+.card-body{padding:16px}
+.input{width:100%;min-height:52px;background:var(--bg3);border:1.5px solid var(--border2);border-radius:12px;padding:0 16px;color:var(--text);font-family:'Tajawal',sans-serif;font-size:1rem;font-weight:500;transition:border-color .15s;outline:none;-webkit-appearance:none}
+.input:focus{border-color:var(--accent)}
+.input::placeholder{color:var(--muted2)}
+.team-section{margin-bottom:20px}
+.team-label{display:flex;align-items:center;gap:10px;font-size:.85rem;font-weight:800;letter-spacing:1px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.team-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.player-inputs{display:flex;flex-direction:column;gap:8px}
+.link-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px}
+.link-type{font-size:.75rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px}
+.link-url{font-size:.8rem;color:var(--muted);word-break:break-all;background:var(--bg3);border-radius:8px;padding:10px 12px;margin-bottom:10px;direction:ltr;text-align:left}
+.scoreboard-sticky{position:sticky;top:0;z-index:50;background:var(--bg);padding:16px;border-bottom:1px solid var(--border)}
+.score-teams{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center}
+.score-team{text-align:center}
+.score-team-name{font-size:.8rem;font-weight:700;color:var(--muted);margin-bottom:4px;letter-spacing:.5px}
+.score-num{font-size:3.8rem;font-weight:900;line-height:1;font-variant-numeric:tabular-nums;transition:transform .2s cubic-bezier(.34,1.56,.64,1)}
+.score-num.bump{animation:scoreBump .35s cubic-bezier(.34,1.56,.64,1)}
+@keyframes scoreBump{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+.score-target{font-size:.75rem;color:var(--muted);margin-top:2px}
+.score-vs{font-size:1rem;font-weight:900;color:var(--muted)}
+.progress-bars{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.progress-bar-bg{height:4px;background:var(--border);border-radius:99px;overflow:hidden}
+.progress-bar-fill{height:100%;border-radius:99px;transition:width .5s cubic-bezier(.4,0,.2,1)}
+.progress-pct{font-size:.7rem;color:var(--muted);margin-top:3px;text-align:center}
+.status-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:99px;font-size:.75rem;font-weight:700;letter-spacing:.5px}
+.status-active{background:rgba(74,222,128,.12);color:var(--green);border:1px solid rgba(74,222,128,.3)}
+.status-ended{background:rgba(255,107,107,.12);color:#ff6b6b;border:1px solid rgba(255,107,107,.3)}
+.status-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+.status-active .status-dot{animation:pulse-dot 1.5s ease infinite}
+@keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:.3}}
+.players-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.player-tag{padding:4px 10px;border-radius:99px;font-size:.78rem;font-weight:700}
+.player-tag-a{background:var(--team-a-dim);color:var(--team-a)}
+.player-tag-b{background:var(--team-b-dim);color:var(--team-b)}
+.rounds-header{display:grid;grid-template-columns:32px 1fr 1fr 1fr;gap:8px;padding:8px 12px;font-size:.7rem;font-weight:800;color:var(--muted);letter-spacing:.8px;text-transform:uppercase;border-bottom:1px solid var(--border)}
+.rounds-header span:nth-child(2){color:var(--team-a)}
+.rounds-header span:nth-child(3){color:var(--team-b)}
+.round-row{display:grid;grid-template-columns:32px 1fr 1fr 1fr;gap:8px;padding:10px 12px;align-items:center;border-bottom:1px solid var(--border)}
+.round-row:last-child{border-bottom:none}
+.round-row:first-of-type{animation:slideIn .25s ease}
+@keyframes slideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.round-num{font-size:.75rem;font-weight:700;color:var(--muted)}
+.round-score-a{font-size:.95rem;font-weight:700;color:var(--team-a)}
+.round-score-b{font-size:.95rem;font-weight:700;color:var(--team-b)}
+.round-total{font-size:.75rem;color:var(--muted);text-align:center}
+.admin-input-section{background:var(--bg2);border:1px solid var(--border);border-radius:18px;padding:16px;margin-bottom:16px}
+.score-inputs{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.score-input-label{font-size:.75rem;font-weight:800;letter-spacing:.5px;margin-bottom:6px;display:block}
+.score-input{width:100%;min-height:64px;background:var(--bg3);border:2px solid var(--border2);border-radius:12px;color:var(--text);font-family:'Tajawal',sans-serif;font-size:2rem;font-weight:900;text-align:center;transition:border-color .15s;outline:none;-webkit-appearance:none;letter-spacing:2px}
+.score-input:focus{border-color:var(--accent)}
+.score-input-a:focus{border-color:var(--team-a)}
+.score-input-b:focus{border-color:var(--team-b)}
+.score-input.active-field{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-dim)}
+.win-overlay{display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.85);backdrop-filter:blur(8px);flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center}
+.win-overlay.show{display:flex;animation:fadeInOverlay .4s ease}
+@keyframes fadeInOverlay{from{opacity:0}to{opacity:1}}
+.win-trophy{font-size:5rem;margin-bottom:16px;animation:trophyBounce .6s cubic-bezier(.34,1.56,.64,1) .2s both}
+@keyframes trophyBounce{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+.win-team{font-size:2.5rem;font-weight:900;margin-bottom:8px}
+.win-sub{color:var(--muted);margin-bottom:32px;font-size:.95rem}
+.win-actions{display:flex;flex-direction:column;gap:10px;width:100%;max-width:280px}
+.win-stats{display:flex;gap:20px;justify-content:center;margin-bottom:28px}
+.win-stat{text-align:center}
+.win-stat-val{font-size:1.6rem;font-weight:900}
+.win-stat-label{font-size:.72rem;color:rgba(255,255,255,.5);font-weight:700;letter-spacing:.5px;margin-top:2px}
+.player-item{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s}
+.player-item:last-child{border-bottom:none}
+.player-item:active{background:var(--bg3)}
+.player-initial{width:40px;height:40px;border-radius:12px;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:900;color:var(--accent);flex-shrink:0}
+.player-info{flex:1}
+.player-name{font-size:.95rem;font-weight:700}
+.player-wl{font-size:.78rem;color:var(--muted);margin-top:1px}
+.player-arrow{color:var(--muted2);font-size:1rem}
+.player-pct-wrap{margin-top:3px;display:flex;align-items:center;gap:6px}
+.player-pct-bar-bg{flex:1;height:3px;background:var(--border);border-radius:99px;overflow:hidden;max-width:60px}
+.player-pct-bar{height:100%;border-radius:99px;transition:width .4s ease}
+.player-pct-num{font-size:.72rem;font-weight:800;color:var(--accent)}
+.player-delete-btn{width:32px;height:32px;border-radius:8px;background:transparent;border:1px solid transparent;color:var(--muted2);font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
+.player-delete-btn:active{background:rgba(255,107,107,.15);color:#ff6b6b;border-color:rgba(255,107,107,.3)}
+.profile-hero{padding:24px 16px;text-align:center;border-bottom:1px solid var(--border)}
+.profile-initial{width:72px;height:72px;border-radius:20px;background:var(--accent-dim);border:2px solid var(--accent-glow);display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:900;color:var(--accent);margin:0 auto 12px}
+.profile-stats-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:1px;background:var(--border);border-radius:14px;overflow:hidden}
+.stat-box{background:var(--bg2);padding:14px 8px;text-align:center}
+.stat-val{font-size:1.4rem;font-weight:900;margin-bottom:2px}
+.stat-label{font-size:.7rem;color:var(--muted);font-weight:700;letter-spacing:.5px}
+.stat-wins{color:var(--green)}
+.stat-losses{color:#ff6b6b}
+.stat-pct{color:var(--accent)}
+.match-item{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.match-result-badge{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:900;flex-shrink:0}
+.result-w{background:rgba(74,222,128,.12);color:var(--green)}
+.result-l{background:rgba(255,107,107,.12);color:#ff6b6b}
+.match-info{flex:1}
+.match-vs{font-size:.88rem;font-weight:600}
+.match-meta{font-size:.75rem;color:var(--muted);margin-top:2px}
+.match-score-end{font-size:.85rem;font-weight:700;text-align:left}
+.matches-item{padding:14px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s}
+.matches-item:active{background:var(--bg3)}
+.matches-item:last-child{border-bottom:none}
+.matches-teams{font-size:.95rem;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.matches-meta{font-size:.78rem;color:var(--muted)}
+.player-select{width:100%;min-height:52px;background:var(--bg3);border:1.5px solid var(--border2);border-radius:12px;padding:0 16px;color:var(--text);font-family:'Tajawal',sans-serif;font-size:1rem;font-weight:600;transition:border-color .15s;outline:none;-webkit-appearance:none;appearance:none;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23666' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:left 14px center}
+.player-select:focus{border-color:var(--accent)}
+.player-select.team-a:focus{border-color:var(--team-a)}
+.player-select.team-b:focus{border-color:var(--team-b)}
+.player-select option{background:#1c1c1c;color:var(--text)}
+.select-label{font-size:.75rem;font-weight:800;color:var(--muted);letter-spacing:.5px;margin-bottom:5px;display:block}
+.admin-login-wrap{min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px}
+.admin-lock-icon{font-size:3.5rem;margin-bottom:16px}
+.admin-login-title{font-size:1.5rem;font-weight:900;margin-bottom:6px;text-align:center}
+.admin-login-sub{font-size:.85rem;color:var(--muted);margin-bottom:36px;text-align:center}
+.admin-login-card{width:100%;max-width:320px}
+.pin-input{width:100%;min-height:68px;background:var(--bg3);border:2px solid var(--border2);border-radius:14px;padding:0 20px;color:var(--text);font-family:'Tajawal',sans-serif;font-size:1.8rem;font-weight:900;text-align:center;letter-spacing:8px;outline:none;transition:border-color .2s;-webkit-appearance:none;margin-bottom:14px}
+.pin-input:focus{border-color:var(--accent)}
+.pin-input.error{border-color:#ff6b6b;animation:pinShake .35s ease}
+@keyframes pinShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+.admin-content-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:99px;font-size:.75rem;font-weight:700;background:var(--accent-dim);color:var(--accent);border:1px solid var(--accent-glow);margin-bottom:4px}
+.admin-logout-btn{background:transparent;border:none;color:var(--muted);font-family:'Tajawal',sans-serif;font-size:.8rem;font-weight:600;cursor:pointer;padding:4px 8px;border-radius:6px;transition:color .15s}
+.admin-logout-btn:active{color:#ff6b6b}
+.search-wrap{position:relative;margin-bottom:12px}
+.search-icon{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+.empty-state{padding:48px 24px;text-align:center}
+.empty-icon{font-size:2.5rem;margin-bottom:12px}
+.empty-text{font-size:.9rem;color:var(--muted)}
+.spacer-sm{height:12px}.spacer{height:20px}.spacer-lg{height:32px}
+.flex-row{display:flex;align-items:center;gap:10px}
+.flex-between{display:flex;align-items:center;justify-content:space-between}
+.text-a{color:var(--team-a)}.text-b{color:var(--team-b)}.text-accent{color:var(--accent)}.text-muted{color:var(--muted)}.text-green{color:var(--green)}
+.section-label{font-size:.75rem;font-weight:800;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;display:block}
+.toast-container{position:fixed;bottom:calc(24px + var(--safe));left:16px;right:16px;z-index:9999;pointer-events:none}
+.toast{background:var(--bg2);border:1px solid var(--border2);border-radius:14px;padding:14px 18px;font-size:.9rem;font-weight:600;box-shadow:0 8px 32px rgba(0,0,0,.5);transform:translateY(80px);opacity:0;transition:all .3s cubic-bezier(.34,1.56,.64,1);display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.toast.show{transform:translateY(0);opacity:1}
+.toast-icon{font-size:1.1rem}
+.match-stats-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--border);border-radius:14px;overflow:hidden;margin-bottom:16px}
+.match-stat-box{background:var(--bg2);padding:12px 8px;text-align:center}
+.match-stat-val{font-size:1.2rem;font-weight:900;margin-bottom:2px}
+.match-stat-label{font-size:.68rem;color:var(--muted);font-weight:700;letter-spacing:.3px}
+.chart-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:14px 14px 10px;margin-bottom:14px}
+.chart-title{font-size:.75rem;font-weight:800;color:var(--muted);letter-spacing:.8px;margin-bottom:12px}
+.chart-svg{width:100%;display:block}
+.chart-legend{display:flex;gap:16px;margin-top:8px}
+.chart-legend-item{display:flex;align-items:center;gap:5px;font-size:.72rem;font-weight:700;color:var(--muted)}
+.chart-legend-dot{width:8px;height:8px;border-radius:50%}
+.lb-header{display:grid;grid-template-columns:28px 1fr auto auto auto;gap:0;padding:8px 14px;font-size:.68rem;font-weight:800;color:var(--muted);letter-spacing:.8px;text-transform:uppercase;border-bottom:1px solid var(--border)}
+.lb-row{display:grid;grid-template-columns:28px 1fr auto auto auto;gap:0;padding:11px 14px;align-items:center;border-bottom:1px solid var(--border);transition:background .1s;cursor:pointer}
+.lb-row:last-child{border-bottom:none}
+.lb-row:active{background:var(--bg3)}
+.lb-rank-num{font-size:.85rem;font-weight:900;color:var(--muted)}
+.lb-rank-num.gold{color:#ffd700}.lb-rank-num.silver{color:#c0c0c0}.lb-rank-num.bronze{color:#cd7f32}
+.lb-player-name{font-size:.9rem;font-weight:700;padding-right:8px}
+.lb-cell{font-size:.82rem;font-weight:700;text-align:center;padding:0 6px;min-width:36px}
+.lb-cell-pct{color:var(--accent)}.lb-cell-w{color:var(--green)}
+.lb-sort-btn{background:none;border:none;cursor:pointer;font-family:'Tajawal',sans-serif;font-size:.68rem;font-weight:800;color:var(--muted);letter-spacing:.5px;padding:0 6px;min-width:36px;text-align:center;transition:color .15s}
+.lb-sort-btn.active{color:var(--accent)}
+.teammate-item{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border)}
+.teammate-item:last-child{border-bottom:none}
+.teammate-vs{font-size:.78rem;color:var(--muted);margin-top:2px}
+.teammate-record{text-align:left}
+.teammate-record-main{font-size:.9rem;font-weight:900}
+.teammate-record-pct{font-size:.72rem;color:var(--muted)}
+.win-streak-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:99px;font-size:.78rem;font-weight:800;background:rgba(74,222,128,.1);color:var(--green);border:1px solid rgba(74,222,128,.25);margin-top:8px}
+.profile-tabs{display:flex;gap:6px;margin-bottom:14px}
+.profile-tab{flex:1;min-height:38px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;font-family:'Tajawal',sans-serif;font-size:.85rem;font-weight:700;color:var(--muted);cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center}
+.profile-tab.active{background:var(--accent);color:#000;border-color:var(--accent)}
+.undo-count{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;border-radius:99px;background:var(--accent);color:#000;font-size:.7rem;font-weight:900;margin-right:4px}
+.quick-btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.quick-btn{flex:1;min-width:48px;min-height:40px;background:var(--bg3);border:1px solid var(--border2);border-radius:10px;color:var(--muted);font-family:'Tajawal',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center}
+.quick-btn:active{background:var(--accent);color:#000;border-color:var(--accent);transform:scale(.93)}
+.quick-btn-label{font-size:.7rem;color:var(--muted);text-align:center;margin-bottom:4px}
+
+/* Loading overlay */
+#loading-overlay{position:fixed;inset:0;background:var(--bg);z-index:9000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+.spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:.9rem;color:var(--muted);font-weight:600}
+
+/* Firebase config notice */
+#firebase-notice{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center}
+.notice-icon{font-size:3rem;margin-bottom:16px}
+.notice-title{font-size:1.3rem;font-weight:900;margin-bottom:10px}
+.notice-body{font-size:.85rem;color:var(--muted);line-height:1.7;margin-bottom:24px}
+.notice-code{background:var(--bg3);border:1px solid var(--border2);border-radius:12px;padding:14px;font-size:.75rem;direction:ltr;text-align:left;word-break:break-all;color:var(--accent);margin-bottom:20px;line-height:1.8}
+</style>
+</head>
+<body>
+
+<!-- Firebase Config Notice (تظهر لو ما تم الإعداد) -->
+<div id="firebase-notice" style="display:none">
+  <div class="notice-icon">🔥</div>
+  <div class="notice-title">إعداد Firebase مطلوب</div>
+  <div class="notice-body">
+    افتح الملف في محرر نصوص وابحث عن<br>
+    <strong style="color:var(--accent)">FIREBASE_CONFIG_HERE</strong><br>
+    وعوّضها بإعدادات مشروعك من Firebase Console
+  </div>
+  <div class="notice-code">
+    apiKey: "xxx",<br>
+    authDomain: "xxx.firebaseapp.com",<br>
+    databaseURL: "https://xxx-default-rtdb.firebaseio.com",<br>
+    projectId: "xxx",<br>
+    storageBucket: "xxx.appspot.com",<br>
+    messagingSenderId: "xxx",<br>
+    appId: "xxx"
+  </div>
+  <div style="font-size:.8rem;color:var(--muted)">راجع ملف <strong>SETUP.md</strong> للتعليمات الكاملة</div>
+</div>
+
+<!-- Loading -->
+<div id="loading-overlay">
+  <div class="spinner"></div>
+  <div class="loading-text">جاري الاتصال...</div>
+</div>
+
+<!-- ════════ HOME ════════ -->
+<div id="page-home" class="page">
+  <div id="home-hero">
+    <span class="hero-logo">النشرة</span>
+    <div class="hero-title">جنجفة.</div>
+    <div class="hero-sub">سجّل، تابع، واحسب النتائج</div>
+    <div class="home-actions">
+      <button class="btn btn-primary" onclick="App.goSetup()"><span>ابدأ مباراة</span><span>⚡</span></button>
+      <div id="active-matches-section" style="display:none">
+        <button class="btn btn-secondary" onclick="App.goActiveMatches()" id="active-matches-btn"><span>🟢 المباريات الشغالة</span></button>
+      </div>
+      <button class="btn btn-secondary" onclick="App.goPlayers()"><span>👥 اللاعبون</span></button>
+      <button class="btn btn-ghost" onclick="App.goMatches()"><span>📋 سجل المباريات</span></button>
+      <button class="btn btn-ghost" onclick="App.goLeaderboard()"><span>🏆 الترتيب العام</span></button>
+      <button class="btn btn-ghost" onclick="App.goAdminLogin()" style="border-color:rgba(200,169,110,.2);color:var(--muted)"><span>🔐 الأدمن</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ SETUP ════════ -->
+<div id="page-setup" class="page">
+  <div class="header"><button class="back-btn" onclick="App.goHome()">←</button><span class="header-title">مباراة جديدة</span></div>
+  <div class="page-content" style="padding-top:20px">
+    <div id="setup-no-players-warn" style="display:none">
+      <div class="card" style="margin-bottom:20px;border-color:rgba(200,169,110,.3)">
+        <div class="card-body" style="text-align:center;padding:24px">
+          <div style="font-size:2rem;margin-bottom:8px">👥</div>
+          <div style="font-size:.95rem;font-weight:700;margin-bottom:6px">لا يوجد لاعبون</div>
+          <div style="font-size:.85rem;color:var(--muted);margin-bottom:16px">أضف اللاعبين من لوحة الأدمن</div>
+          <button class="btn btn-primary btn-sm" onclick="App.goAdminLogin()">إضافة لاعبين ←</button>
+        </div>
+      </div>
+    </div>
+    <div id="setup-form-content">
+      <div class="team-section">
+        <div class="team-label"><div class="team-dot" style="background:var(--team-a)"></div><span style="color:var(--team-a)">فريق لنا</span></div>
+        <div class="player-inputs" id="team-a-inputs"></div>
+      </div>
+      <div class="team-section">
+        <div class="team-label"><div class="team-dot" style="background:var(--team-b)"></div><span style="color:var(--team-b)">فريق لهم</span></div>
+        <div class="player-inputs" id="team-b-inputs"></div>
+      </div>
+      <button class="btn btn-primary" onclick="App.createMatch()">ابدأ المباراة ➜</button>
+    </div>
+    <div class="spacer-lg"></div>
+  </div>
+</div>
+
+<!-- ════════ LINKS ════════ -->
+<div id="page-links" class="page">
+  <div class="header"><button class="back-btn" onclick="App.goHome()">⌂</button><span class="header-title">روابط المباراة</span></div>
+  <div class="page-content" style="padding-top:20px">
+    <div class="link-card">
+      <div class="link-type" style="color:var(--team-a)">🔗 رابط المشاهدة — شاركه مع الجميع</div>
+      <div class="link-url" id="viewer-link-display"></div>
+      <button class="btn btn-secondary btn-sm" onclick="App.copyViewerLink()">نسخ رابط المشاهدة</button>
+    </div>
+    <div class="link-card" style="border-color:rgba(200,169,110,.3)">
+      <div class="link-type" style="color:var(--accent)">🔐 رابط التسجيل — لك فقط</div>
+      <div class="link-url" id="admin-link-display"></div>
+      <button class="btn btn-secondary btn-sm" onclick="App.copyAdminLink()">نسخ رابط التسجيل</button>
+    </div>
+    <div class="spacer"></div>
+    <button class="btn btn-primary" id="open-admin-btn">فتح شاشة التسجيل ←</button>
+    <div class="spacer-sm"></div>
+    <button class="btn btn-secondary" id="open-viewer-btn">فتح شاشة المشاهدة</button>
+    <div class="spacer-lg"></div>
+  </div>
+</div>
+
+<!-- ════════ VIEWER ════════ -->
+<div id="page-viewer" class="page">
+  <div class="scoreboard-sticky">
+    <div class="flex-between" style="margin-bottom:10px">
+      <button class="back-btn" onclick="App.goHome()">←</button>
+      <div id="viewer-status-badge"></div>
+      <div style="font-size:.8rem;color:var(--muted)" id="viewer-rounds-count"></div>
+    </div>
+    <div class="score-teams">
+      <div class="score-team"><div class="score-team-name text-a">لنا</div><div class="score-num text-a" id="viewer-score-a">0</div><div class="score-target text-muted">/250</div></div>
+      <div class="score-vs">—</div>
+      <div class="score-team"><div class="score-team-name text-b">لهم</div><div class="score-num text-b" id="viewer-score-b">0</div><div class="score-target text-muted">/250</div></div>
+    </div>
+    <div class="progress-bars">
+      <div><div class="progress-bar-bg"><div class="progress-bar-fill" id="prog-a" style="background:var(--team-a);width:0%"></div></div><div class="progress-pct text-a" id="prog-a-pct">0%</div></div>
+      <div><div class="progress-bar-bg"><div class="progress-bar-fill" id="prog-b" style="background:var(--team-b);width:0%"></div></div><div class="progress-pct text-b" id="prog-b-pct">0%</div></div>
+    </div>
+  </div>
+  <div class="page-content" style="padding-top:16px">
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-body">
+        <div class="flex-between">
+          <div style="flex:1"><div class="t-small text-a" style="margin-bottom:4px">▲ فريق لنا</div><div class="players-row" id="viewer-players-a"></div></div>
+          <div style="width:1px;background:var(--border);margin:0 12px;align-self:stretch"></div>
+          <div style="flex:1;text-align:left"><div class="t-small text-b" style="margin-bottom:4px;text-align:left">▲ فريق لهم</div><div class="players-row" id="viewer-players-b" style="justify-content:flex-end"></div></div>
+        </div>
+      </div>
+    </div>
+    <div id="viewer-match-stats" style="display:none" class="match-stats-grid">
+      <div class="match-stat-box"><div class="match-stat-val" id="stat-rounds">0</div><div class="match-stat-label">جولات</div></div>
+      <div class="match-stat-box"><div class="match-stat-val text-a" id="stat-best-a">0</div><div class="match-stat-label">أعلى جولة لنا</div></div>
+      <div class="match-stat-box"><div class="match-stat-val text-b" id="stat-best-b">0</div><div class="match-stat-label">أعلى جولة لهم</div></div>
+    </div>
+    <div class="chart-wrap" id="viewer-chart-wrap" style="display:none">
+      <div class="chart-title">SCORE PROGRESS</div>
+      <svg class="chart-svg" id="viewer-chart" height="80" viewBox="0 0 300 80" preserveAspectRatio="none"></svg>
+      <div class="chart-legend">
+        <div class="chart-legend-item"><div class="chart-legend-dot" style="background:var(--team-a)"></div>لنا</div>
+        <div class="chart-legend-item"><div class="chart-legend-dot" style="background:var(--team-b)"></div>لهم</div>
+      </div>
+    </div>
+    <span class="section-label">سجل الجولات</span>
+    <div class="card" style="margin-bottom:14px">
+      <div class="rounds-header"><span>#</span><span>لنا</span><span>لهم</span><span>مجموع</span></div>
+      <div id="viewer-rounds-list"></div>
+    </div>
+    <button class="btn btn-ghost btn-sm" id="show-all-rounds-btn" onclick="App.toggleAllRounds()" style="display:none">عرض كل الجولات</button>
+    <div class="spacer"></div>
+    <button class="btn btn-secondary btn-sm" onclick="App.copyViewerLinkFromViewer()">نسخ رابط المشاهدة 🔗</button>
+    <div id="rematch-section" style="display:none"><div class="spacer-sm"></div><button class="btn btn-secondary btn-sm" onclick="App.rematch()">🔄 ريماتش بنفس اللاعبين</button></div>
+    <div class="spacer-lg"></div>
+  </div>
+</div>
+
+<!-- ════════ ADMIN ════════ -->
+<div id="page-admin" class="page">
+  <div class="scoreboard-sticky">
+    <div class="flex-between" style="margin-bottom:10px">
+      <button class="back-btn" onclick="App.goHome()">←</button>
+      <div id="admin-status-badge"></div>
+      <div style="font-size:.8rem;color:var(--muted)" id="admin-rounds-count"></div>
+    </div>
+    <div class="score-teams">
+      <div class="score-team"><div class="score-team-name text-a">لنا</div><div class="score-num text-a" id="admin-score-a">0</div><div class="score-target text-muted">/250</div></div>
+      <div class="score-vs">—</div>
+      <div class="score-team"><div class="score-team-name text-b">لهم</div><div class="score-num text-b" id="admin-score-b">0</div><div class="score-target text-muted">/250</div></div>
+    </div>
+    <div class="progress-bars">
+      <div><div class="progress-bar-bg"><div class="progress-bar-fill" id="admin-prog-a" style="background:var(--team-a);width:0%"></div></div></div>
+      <div><div class="progress-bar-bg"><div class="progress-bar-fill" id="admin-prog-b" style="background:var(--team-b);width:0%"></div></div></div>
+    </div>
+  </div>
+  <div class="page-content" style="padding-top:16px">
+    <div class="admin-input-section" id="admin-input-section">
+      <span class="section-label">أدخل نتيجة الجولة</span>
+      <div class="score-inputs">
+        <div><span class="score-input-label text-a">لنا</span><input id="input-a" class="score-input score-input-a" type="number" inputmode="numeric" min="0" placeholder="—" autocomplete="off"></div>
+        <div><span class="score-input-label text-b">لهم</span><input id="input-b" class="score-input score-input-b" type="number" inputmode="numeric" min="0" placeholder="—" autocomplete="off"></div>
+      </div>
+      <button class="btn btn-primary" id="add-round-btn" onclick="App.addRound()">إضافة الجولة +</button>
+      <div style="margin-top:10px">
+        <div class="quick-btn-label" id="quick-label">اختر حقل أولاً</div>
+        <div class="quick-btns">
+          <button class="quick-btn" onclick="App.quickScore(5)">+5</button>
+          <button class="quick-btn" onclick="App.quickScore(10)">+10</button>
+          <button class="quick-btn" onclick="App.quickScore(15)">+15</button>
+          <button class="quick-btn" onclick="App.quickScore(20)">+20</button>
+          <button class="quick-btn" onclick="App.quickScore(25)">+25</button>
+          <button class="quick-btn" onclick="App.quickScore(30)">+30</button>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;margin-bottom:16px">
+      <button class="btn btn-secondary btn-sm" style="flex:1" onclick="App.undoRound()" id="undo-btn">↩ تراجع <span class="undo-count" id="undo-count" style="display:none">0</span></button>
+      <button class="btn btn-danger btn-sm" style="flex:1" onclick="App.confirmEndMatch()">إنهاء المباراة ✕</button>
+    </div>
+    <span class="section-label">سجل الجولات</span>
+    <div class="card" style="margin-bottom:14px">
+      <div class="rounds-header"><span>#</span><span>لنا</span><span>لهم</span><span>مجموع</span></div>
+      <div id="admin-rounds-list"></div>
+    </div>
+    <div class="spacer-lg"></div>
+  </div>
+</div>
+
+<!-- ════════ ADMIN LOGIN ════════ -->
+<div id="page-admin-login" class="page">
+  <div class="admin-login-wrap">
+    <div class="admin-lock-icon">🔐</div>
+    <div class="admin-login-title">لوحة الأدمن</div>
+    <div class="admin-login-sub">أدخل الباسورد للوصول</div>
+    <div class="admin-login-card">
+      <input class="pin-input" id="admin-pin-input" type="password" inputmode="numeric" placeholder="••••••••" onkeydown="if(event.key==='Enter') App.checkAdminPin()" autocomplete="off">
+      <button class="btn btn-primary" onclick="App.checkAdminPin()">دخول ←</button>
+      <div style="margin-top:12px;text-align:center"><button class="btn btn-ghost btn-sm" style="width:auto;padding:0 20px" onclick="App.goHome()">رجوع</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ ADMIN PANEL ════════ -->
+<div id="page-admin-panel" class="page">
+  <div class="header">
+    <button class="back-btn" onclick="App.goHome()">←</button>
+    <span class="header-title">لوحة الأدمن</span>
+    <button class="admin-logout-btn" onclick="App.adminLogout()">خروج 🚪</button>
+  </div>
+  <div class="page-content" style="padding-top:16px">
+    <div style="margin-bottom:16px"><span class="admin-content-badge">🔐 أدمن</span></div>
+    <!-- المباريات الشغالة -->
+    <div id="admin-active-matches-section" style="display:none;margin-bottom:20px">
+      <span class="section-label">🟢 المباريات الشغالة</span>
+      <div class="card" style="border-color:rgba(255,107,107,.25)"><div id="admin-active-matches-list"></div></div>
+    </div>
+    <div class="card" style="margin-bottom:20px;border-color:rgba(200,169,110,.3)">
+      <div class="card-body">
+        <span class="section-label">➕ إضافة لاعب جديد</span>
+        <div style="display:flex;gap:8px">
+          <input class="input" id="new-player-input" placeholder="اسم اللاعب..." autocomplete="off" onkeydown="if(event.key==='Enter') App.addNewPlayer()" style="flex:1">
+          <button class="btn btn-primary btn-sm" style="width:auto;padding:0 20px" onclick="App.addNewPlayer()">إضافة</button>
+        </div>
+      </div>
+    </div>
+    <span class="section-label">اللاعبون</span>
+    <div class="search-wrap"><span class="search-icon">🔍</span><input class="input" style="padding-right:42px" placeholder="ابحث..." id="players-search" oninput="App.filterPlayers()" autocomplete="off"></div>
+    <div class="card"><div id="players-list-content"></div></div>
+    <div class="spacer-lg"></div>
+  </div>
+</div>
+
+<!-- ════════ PLAYERS ════════ -->
+<div id="page-players" class="page">
+  <div class="header"><button class="back-btn" onclick="App.goHome()">←</button><span class="header-title">اللاعبون</span></div>
+  <div class="page-content" style="padding-top:16px">
+    <div class="search-wrap"><span class="search-icon">🔍</span><input class="input" style="padding-right:42px" placeholder="ابحث..." id="players-view-search" oninput="App.filterPlayersView()" autocomplete="off"></div>
+    <div class="card"><div id="players-view-content"></div></div>
+    <div class="spacer-lg"></div>
+  </div>
+</div>
+
+<!-- ════════ PROFILE ════════ -->
+<div id="page-profile" class="page">
+  <div class="header"><button class="back-btn" onclick="App.goBack()">←</button><span class="header-title" id="profile-header-name"></span></div>
+  <div class="page-content" style="padding-top:0">
+    <div class="profile-hero">
+      <div class="profile-initial" id="profile-initial"></div>
+      <div style="font-size:1.4rem;font-weight:900;margin-bottom:16px" id="profile-name"></div>
+      <div class="profile-stats-grid">
+        <div class="stat-box"><div class="stat-val stat-wins" id="p-wins">0</div><div class="stat-label">فوز</div></div>
+        <div class="stat-box"><div class="stat-val stat-losses" id="p-losses">0</div><div class="stat-label">خسارة</div></div>
+        <div class="stat-box"><div class="stat-val" id="p-played">0</div><div class="stat-label">مباراة</div></div>
+        <div class="stat-box"><div class="stat-val stat-pct" id="p-pct">-</div><div class="stat-label">نسبة</div></div>
+      </div>
+    </div>
+    <div id="profile-streak-wrap" style="text-align:center;padding:8px 0 4px"></div>
+    <div class="spacer"></div>
+    <div class="profile-tabs">
+      <button class="profile-tab active" id="ptab-matches" onclick="App.profileTab('matches')">المباريات</button>
+      <button class="profile-tab" id="ptab-teammates" onclick="App.profileTab('teammates')">أفضل ثلاثي</button>
+    </div>
+    <div id="profile-tab-matches"><div class="card"><div id="profile-matches-list"></div></div></div>
+    <div id="profile-tab-teammates" style="display:none"><div id="profile-teammates-list"></div></div>
+    <div class="spacer-lg"></div>
+  </div>
+</div>
+
+<!-- ════════ MATCHES ════════ -->
+<div id="page-matches" class="page">
+  <div class="header"><button class="back-btn" onclick="App.goHome()">←</button><span class="header-title">سجل المباريات</span></div>
+  <div class="page-content" style="padding-top:16px">
+    <div class="card"><div id="all-matches-list"></div></div>
+    <div class="spacer-lg"></div>
+  </div>
+</div>
+
+<!-- ════════ LEADERBOARD ════════ -->
+<div id="page-leaderboard" class="page">
+  <div class="header"><button class="back-btn" onclick="App.goHome()">←</button><span class="header-title">الترتيب العام 🏆</span></div>
+  <div class="page-content" style="padding-top:16px">
+    <div class="card" style="margin-bottom:12px">
+      <div class="lb-header">
+        <span>#</span><span>اللاعب</span>
+        <button class="lb-sort-btn active" id="lb-sort-pct" onclick="App.lbSort('pct')">نسبة%</button>
+        <button class="lb-sort-btn" id="lb-sort-w" onclick="App.lbSort('wins')">ف</button>
+        <button class="lb-sort-btn" id="lb-sort-m" onclick="App.lbSort('matches')">م</button>
+      </div>
+      <div id="lb-list"></div>
+    </div>
+    <div class="spacer-lg"></div>
+  </div>
+</div>
+
+<!-- WIN OVERLAY -->
+<div class="win-overlay" id="win-overlay">
+  <div class="win-trophy">🏆</div>
+  <div class="win-team" id="win-team-name"></div>
+  <div class="win-stats">
+    <div class="win-stat"><div class="win-stat-val" id="win-stat-rounds">—</div><div class="win-stat-label">جولة</div></div>
+    <div class="win-stat"><div class="win-stat-val" id="win-stat-high">—</div><div class="win-stat-label">أعلى جولة</div></div>
+    <div class="win-stat"><div class="win-stat-val" id="win-stat-avg">—</div><div class="win-stat-label">متوسط</div></div>
+  </div>
+  <div class="win-sub" id="win-sub-text"></div>
+  <div class="win-actions"><button class="btn btn-primary" onclick="App.dismissWin()">عرض النتيجة</button></div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+
+<!-- ════════════════════════════════════════════════════════
+  Firebase SDK
+════════════════════════════════════════════════════════ -->
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getDatabase, ref, set, get, push, update, remove, onValue, off, child }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+
+// ══════════════════════════════════════════════════════════
+// 🔥 ضع إعدادات Firebase هنا — FIREBASE_CONFIG_HERE
+// ══════════════════════════════════════════════════════════
+const firebaseConfig = {
+  apiKey: "AIzaSyAM7ytV178WL4koEKRrijrJpWlUwoX0vwE",
+  authDomain: "janjfa-score.firebaseapp.com",
+  databaseURL: "https://janjfa-score-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "janjfa-score",
+  storageBucket: "janjfa-score.firebasestorage.app",
+  messagingSenderId: "877435404537",
+  appId: "1:877435404537:web:3f4b47e78a683530192228"
+};
+
+// ── تحقق إذا تم الإعداد ──
+if (firebaseConfig.apiKey === 'FIREBASE_CONFIG_HERE') {
+  document.getElementById('loading-overlay').style.display = 'none';
+  document.getElementById('firebase-notice').style.display = 'flex';
+  throw new Error('Firebase not configured');
+}
+
+const app = initializeApp(firebaseConfig);
+const db  = getDatabase(app);
+
+// ══════════════════════════════════════════════════════════
+// DB — Firebase Realtime Database
+// ══════════════════════════════════════════════════════════
+const DB = {
+  // ── Cache محلي للبيانات ──
+  _players: {},
+  _matches: {},
+  _listeners: {},
+
+  // ── Players ──
+  async getPlayers() {
+    const snap = await get(ref(db, 'players'));
+    return snap.exists() ? Object.values(snap.val()) : [];
+  },
+
+  async getPlayerById(id) {
+    const snap = await get(ref(db, `players/${id}`));
+    return snap.exists() ? snap.val() : null;
+  },
+
+  async upsertPlayer(name) {
+    const norm = name.trim();
+    const players = await DB.getPlayers();
+    let p = players.find(x => x.name === norm);
+    if (!p) {
+      const id = 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
+      p = { id, name: norm, wins: 0, losses: 0, matches_played: 0, created_at: Date.now() };
+      await set(ref(db, `players/${id}`), p);
+    }
+    return p;
+  },
+
+  async updatePlayerStats(id, win) {
+    const snap = await get(ref(db, `players/${id}`));
+    if (!snap.exists()) return;
+    const p = snap.val();
+    await update(ref(db, `players/${id}`), {
+      matches_played: (p.matches_played || 0) + 1,
+      wins:    win ? (p.wins    || 0) + 1 : (p.wins    || 0),
+      losses: !win ? (p.losses  || 0) + 1 : (p.losses  || 0),
+      updated_at: Date.now()
+    });
+  },
+
+  async deletePlayer(id) {
+    await remove(ref(db, `players/${id}`));
+  },
+
+  // ── Matches ──
+  async getMatches() {
+    const snap = await get(ref(db, 'matches'));
+    if (!snap.exists()) return [];
+    return Object.values(snap.val()).sort((a,b) => b.created_at - a.created_at);
+  },
+
+  async getMatchById(id) {
+    const snap = await get(ref(db, `matches/${id}`));
+    return snap.exists() ? snap.val() : null;
+  },
+
+  async saveMatch(match) {
+    // rounds كـ object بدل array (Firebase لا يحب arrays)
+    const toSave = { ...match };
+    if (Array.isArray(match.rounds)) {
+      toSave.rounds = match.rounds.length
+        ? Object.fromEntries(match.rounds.map((r,i) => [i, r]))
+        : null;
+    }
+    await set(ref(db, `matches/${match.id}`), toSave);
+  },
+
+  // ── Realtime listener للمباراة ──
+  listenMatch(matchId, callback) {
+    DB.unlistenMatch(matchId);
+    const r = ref(db, `matches/${matchId}`);
+    const handler = onValue(r, snap => {
+      if (!snap.exists()) { callback(null); return; }
+      const m = snap.val();
+      // تحويل rounds من object لـ array
+      if (m.rounds && typeof m.rounds === 'object' && !Array.isArray(m.rounds)) {
+        m.rounds = Object.values(m.rounds).sort((a,b) => b.created_at - a.created_at);
+      } else if (!m.rounds) {
+        m.rounds = [];
+      }
+      callback(m);
+    });
+    DB._listeners[matchId] = { ref: r, handler };
+  },
+
+  unlistenMatch(matchId) {
+    if (DB._listeners[matchId]) {
+      off(DB._listeners[matchId].ref);
+      delete DB._listeners[matchId];
+    }
+  },
+
+  // ── Realtime listener للاعبين ──
+  listenPlayers(callback) {
+    const r = ref(db, 'players');
+    onValue(r, snap => {
+      callback(snap.exists() ? Object.values(snap.val()) : []);
+    });
+  },
+
+  // ── Realtime listener للمباريات ──
+  listenMatches(callback) {
+    const r = ref(db, 'matches');
+    onValue(r, snap => {
+      if (!snap.exists()) { callback([]); return; }
+      const matches = Object.values(snap.val()).map(m => {
+        if (m.rounds && typeof m.rounds === 'object' && !Array.isArray(m.rounds))
+          m.rounds = Object.values(m.rounds).sort((a,b) => b.created_at - a.created_at);
+        else if (!m.rounds) m.rounds = [];
+        return m;
+      }).sort((a,b) => b.created_at - a.created_at);
+      callback(matches);
+    });
+  }
+};
+
+// ══════════════════════════════════════════════════════════
+// ROUTER
+// ══════════════════════════════════════════════════════════
+const Router = {
+  init() { window.addEventListener('hashchange', Router.handle); Router.handle(); },
+  navigate(hash) { window.location.hash = hash; },
+  handle() {
+    const hash = window.location.hash || '#/';
+    const parts = hash.slice(1).split('/').filter(Boolean);
+    if (!parts.length) { App.renderHome(); return; }
+    if (parts[0]==='m' && parts[1] && parts[2]==='a' && parts[3]) { App.loadAdmin(parts[1], parts[3]); return; }
+    if (parts[0]==='m' && parts[1]) { App.loadViewer(parts[1]); return; }
+    if (parts[0]==='players') { App.showPlayers(); return; }
+    if (parts[0]==='p' && parts[1]) { App._renderProfile(parts[1]); return; }
+    if (parts[0]==='matches') { App.showMatches(); return; }
+    if (parts[0]==='leaderboard') { App.showLeaderboard(); return; }
+    if (parts[0]==='setup') { App.renderSetup(); return; }
+    if (parts[0]==='admin' || parts[0]==='admin-login') { App.showPage('admin-login'); document.getElementById('admin-pin-input').value=''; return; }
+    if (parts[0]==='admin-panel') { App.isAdminAuthed() ? App._renderAdminPanel() : Router.navigate('/admin-login'); return; }
+    App.renderHome();
+  }
+};
+
+// ══════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════
+let currentMatch     = null;
+let currentViewerMatchId = null;
+let currentAdminMatchId  = null;
+let currentAdminToken    = null;
+let showAllRounds    = false;
+let lbSortField      = 'pct';
+let activeScoreInput = 'a';
+let cachedPlayers    = [];
+let cachedMatches    = [];
+
+// ══════════════════════════════════════════════════════════
+// APP
+// ══════════════════════════════════════════════════════════
+const App = {
+
+  showPage(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    const el = document.getElementById('page-'+id);
+    if (el) el.classList.add('active');
+    window.scrollTo(0,0);
+  },
+
+  goHome()       { DB.unlistenMatch(currentAdminMatchId); DB.unlistenMatch(currentViewerMatchId); Router.navigate('/'); },
+  goBack()       { window.history.back(); },
+  goSetup()      { Router.navigate('/setup'); },
+  goPlayers()    { Router.navigate('/players'); },
+  goMatches()    { Router.navigate('/matches'); },
+  goLeaderboard(){ Router.navigate('/leaderboard'); },
+  goAdminLogin() { Router.navigate('/admin-login'); },
+
+  goActiveMatches() {
+    const active = cachedMatches.filter(m => m.status==='active');
+    if (active.length===1) Router.navigate('/m/'+active[0].id);
+  },
+
+  renderHome() {
+    App.showPage('home');
+    const active = cachedMatches.filter(m => m.status==='active');
+    const sec = document.getElementById('active-matches-section');
+    const btn = document.getElementById('active-matches-btn');
+    if (active.length > 0) {
+      sec.style.display = 'block';
+      btn.innerHTML = `<span>🟢 مباراة شغالة (${active.length})</span>`;
+    } else { sec.style.display = 'none'; }
+  },
+
+  // ── SETUP ──
+  async renderSetup() {
+    App.showPage('setup');
+    const players = cachedPlayers;
+    if (!players.length) {
+      document.getElementById('setup-no-players-warn').style.display = 'block';
+      document.getElementById('setup-form-content').style.display = 'none';
+      return;
+    }
+    document.getElementById('setup-no-players-warn').style.display = 'none';
+    document.getElementById('setup-form-content').style.display = 'block';
+    const sorted = [...players].sort((a,b) => b.matches_played - a.matches_played);
+    const makeOpts = (team, slot) => {
+      const opts = sorted.map(p => `<option value="${p.id}">${p.name} (${p.wins||0}ف ${p.losses||0}خ)</option>`).join('');
+      return `<div><label class="select-label">لاعب ${slot}</label><select class="player-select team-${team}" id="setup-${team}-${slot}"><option value="">— اختر لاعباً —</option>${opts}</select></div>`;
+    };
+    ['a','b'].forEach(t => { document.getElementById(`team-${t}-inputs`).innerHTML = [1,2,3].map(i => makeOpts(t,i)).join(''); });
+  },
+
+  getSetupIds(t) { return [1,2,3].map(i => document.getElementById(`setup-${t}-${i}`)?.value).filter(Boolean); },
+
+  async createMatch() {
+    const idsA = App.getSetupIds('a'), idsB = App.getSetupIds('b');
+    if (!idsA.length || !idsB.length) { Toast.show('اختر لاعباً واحداً على الأقل لكل فريق','⚠️'); return; }
+    const all = [...idsA,...idsB];
+    if (new Set(all).size !== all.length) { Toast.show('لاعب مكرر في الفريقين!','⚠️'); return; }
+
+    const getP = id => cachedPlayers.find(p => p.id===id);
+    const pA = idsA.map(getP).filter(Boolean);
+    const pB = idsB.map(getP).filter(Boolean);
+    const matchId    = 'm_'+Date.now();
+    const adminToken = 'a_'+Math.random().toString(36).slice(2,10);
+
+    const match = {
+      id: matchId, status: 'active',
+      teamA_players: pA.map(p=>p.id), teamA_names: pA.map(p=>p.name),
+      teamB_players: pB.map(p=>p.id), teamB_names: pB.map(p=>p.name),
+      teamA_score_total:0, teamB_score_total:0,
+      winner:null, target_score:250,
+      rounds:[], rounds_count:0,
+      created_at:Date.now(), ended_at:null, admin_token:adminToken
+    };
+    await DB.saveMatch(match);
+    currentMatch = match;
+    App.showLinks(match);
+  },
+
+  // ── LINKS ──
+  showLinks(match) {
+    const base = window.location.origin + window.location.pathname;
+    document.getElementById('viewer-link-display').textContent = base+'#/m/'+match.id;
+    document.getElementById('admin-link-display').textContent  = base+'#/m/'+match.id+'/a/'+match.admin_token;
+    document.getElementById('open-admin-btn').onclick  = () => App.loadAdmin(match.id, match.admin_token);
+    document.getElementById('open-viewer-btn').onclick = () => App.loadViewer(match.id);
+    App.showPage('links');
+  },
+
+  copyViewerLink() { App._copy(document.getElementById('viewer-link-display').textContent,'✅ تم نسخ رابط المشاهدة'); },
+  copyAdminLink()  { App._copy(document.getElementById('admin-link-display').textContent,'🔐 تم نسخ رابط التسجيل'); },
+  copyViewerLinkFromViewer() { App._copy(location.origin+location.pathname+'#/m/'+currentViewerMatchId,'✅ تم نسخ الرابط'); },
+
+  _copy(text, msg) {
+    if (navigator.clipboard) navigator.clipboard.writeText(text).then(() => Toast.show(msg,''));
+    else { const t=document.createElement('textarea'); t.value=text; document.body.appendChild(t); t.select(); document.execCommand('copy'); document.body.removeChild(t); Toast.show(msg,''); }
+  },
+
+  // ── VIEWER — Realtime ──
+  loadViewer(matchId) {
+    currentViewerMatchId = matchId;
+    showAllRounds = false;
+    App.showPage('viewer');
+    // listen realtime
+    DB.listenMatch(matchId, match => {
+      if (!match) { document.getElementById('viewer-rounds-list').innerHTML='<div class="empty-state"><div class="empty-text">المباراة غير موجودة</div></div>'; return; }
+      App._renderViewerUI(match);
+    });
+  },
+
+  _renderViewerUI(match) {
+    document.getElementById('viewer-status-badge').innerHTML = match.status==='active'
+      ? '<span class="status-badge status-active"><span class="status-dot"></span>شغالة</span>'
+      : '<span class="status-badge status-ended"><span class="status-dot"></span>انتهت</span>';
+    document.getElementById('viewer-rounds-count').textContent = (match.rounds_count||0)+' جولة';
+    App._updateScoreDisplay('viewer-score-a', match.teamA_score_total);
+    App._updateScoreDisplay('viewer-score-b', match.teamB_score_total);
+    const pA=Math.min(100,Math.round(match.teamA_score_total/match.target_score*100));
+    const pB=Math.min(100,Math.round(match.teamB_score_total/match.target_score*100));
+    document.getElementById('prog-a').style.width=pA+'%';
+    document.getElementById('prog-b').style.width=pB+'%';
+    document.getElementById('prog-a-pct').textContent=pA+'%';
+    document.getElementById('prog-b-pct').textContent=pB+'%';
+    document.getElementById('viewer-players-a').innerHTML=(match.teamA_names||[]).map(n=>`<span class="player-tag player-tag-a">${n}</span>`).join('');
+    document.getElementById('viewer-players-b').innerHTML=(match.teamB_names||[]).map(n=>`<span class="player-tag player-tag-b">${n}</span>`).join('');
+    App._renderRoundsList('viewer-rounds-list', match, showAllRounds?999:5);
+    const btn=document.getElementById('show-all-rounds-btn');
+    if ((match.rounds||[]).length>5) { btn.style.display='block'; btn.textContent=showAllRounds?'إخفاء الجولات':`عرض كل الجولات (${match.rounds.length})`; }
+    else btn.style.display='none';
+    App._renderMatchStats(match);
+    App._renderChart(match.rounds||[], match.target_score);
+    document.getElementById('rematch-section').style.display = match.status==='ended'?'block':'none';
+  },
+
+  // ── ADMIN — Realtime ──
+  async loadAdmin(matchId, token) {
+    const match = await DB.getMatchById(matchId);
+    if (!match || match.admin_token !== token) { Toast.show('رابط التسجيل غير صحيح','⚠️'); Router.navigate('/'); return; }
+    currentAdminMatchId  = matchId;
+    currentAdminToken    = token;
+    App.showPage('admin');
+
+    // listen realtime
+    DB.listenMatch(matchId, m => { if (m) App._renderAdminUI(m); });
+
+    // input handlers
+    ['input-a','input-b'].forEach(id => { const o=document.getElementById(id); const f=o.cloneNode(true); o.parentNode.replaceChild(f,o); });
+    const inA=document.getElementById('input-a'), inB=document.getElementById('input-b');
+    inA.addEventListener('keydown', e => { if(e.key==='Enter'){ inB.focus(); activeScoreInput='b'; } });
+    inB.addEventListener('keydown', e => { if(e.key==='Enter') App.addRound(); });
+    inA.addEventListener('focus', () => { activeScoreInput='a'; App._updateQuickLabel('لنا'); inA.classList.add('active-field'); inB.classList.remove('active-field'); });
+    inB.addEventListener('focus', () => { activeScoreInput='b'; App._updateQuickLabel('لهم'); inB.classList.add('active-field'); inA.classList.remove('active-field'); });
+    activeScoreInput='a';
+    setTimeout(() => { inA.focus(); inA.classList.add('active-field'); }, 300);
+  },
+
+  _renderAdminUI(match) {
+    document.getElementById('admin-status-badge').innerHTML = match.status==='active'
+      ? '<span class="status-badge status-active"><span class="status-dot"></span>شغالة</span>'
+      : '<span class="status-badge status-ended"><span class="status-dot"></span>انتهت</span>';
+    document.getElementById('admin-rounds-count').textContent=(match.rounds_count||0)+' جولة';
+    App._updateScoreDisplay('admin-score-a', match.teamA_score_total);
+    App._updateScoreDisplay('admin-score-b', match.teamB_score_total);
+    const pA=Math.min(100,Math.round(match.teamA_score_total/match.target_score*100));
+    const pB=Math.min(100,Math.round(match.teamB_score_total/match.target_score*100));
+    document.getElementById('admin-prog-a').style.width=pA+'%';
+    document.getElementById('admin-prog-b').style.width=pB+'%';
+    App._renderRoundsList('admin-rounds-list', match, 999);
+    const locked = match.status==='ended';
+    document.getElementById('admin-input-section').style.opacity = locked?'0.4':'1';
+    document.getElementById('add-round-btn').disabled = locked;
+    document.getElementById('undo-btn').disabled = locked||!(match.rounds||[]).length;
+    App._updateUndoCount(match);
+  },
+
+  async addRound() {
+    const match = await DB.getMatchById(currentAdminMatchId);
+    if (!match || match.status==='ended') return;
+    const vA=parseInt(document.getElementById('input-a').value);
+    const vB=parseInt(document.getElementById('input-b').value);
+    if (isNaN(vA)||isNaN(vB)||vA<0||vB<0) { Toast.show('أدخل نقاط صحيحة لكلا الفريقين','⚠️'); return; }
+
+    const rounds = match.rounds||[];
+    const round  = { id:'r_'+Date.now(), round_number:rounds.length+1, teamA_score:vA, teamB_score:vB, created_at:Date.now() };
+    rounds.unshift(round);
+    match.rounds            = rounds;
+    match.rounds_count      = rounds.length;
+    match.teamA_score_total += vA;
+    match.teamB_score_total += vB;
+
+    if (navigator.vibrate) navigator.vibrate(30);
+    document.getElementById('input-a').value='';
+    document.getElementById('input-b').value='';
+    activeScoreInput='a';
+    document.getElementById('input-a').focus();
+
+    if (match.teamA_score_total>=match.target_score || match.teamB_score_total>=match.target_score) {
+      match.winner  = match.teamA_score_total>=match.target_score ? 'A' : 'B';
+      match.status  = 'ended';
+      match.ended_at= Date.now();
+      await DB.saveMatch(match);
+      await App.finalizeMatch(match);
+      if (navigator.vibrate) navigator.vibrate([80,40,80,40,200]);
+      App.showWinOverlay(match);
+      return;
+    }
+    await DB.saveMatch(match);
+  },
+
+  quickScore(val) {
+    const el=document.getElementById('input-'+activeScoreInput);
+    if (!el) return;
+    el.value=(parseInt(el.value)||0)+val;
+    el.focus();
+  },
+
+  _updateUndoCount(match) {
+    const b=document.getElementById('undo-count'); if(!b) return;
+    const n=(match?.rounds||[]).length;
+    b.style.display=n>0?'inline-flex':'none'; b.textContent=n;
+  },
+
+  async undoRound() {
+    const match=await DB.getMatchById(currentAdminMatchId);
+    if (!match||!(match.rounds||[]).length||match.status==='ended') return;
+    const last=match.rounds.shift();
+    match.teamA_score_total-=last.teamA_score;
+    match.teamB_score_total-=last.teamB_score;
+    match.rounds_count=match.rounds.length;
+    await DB.saveMatch(match);
+    if (navigator.vibrate) navigator.vibrate(40);
+    Toast.show(`تراجع: ${last.teamA_score}–${last.teamB_score}`,'↩');
+  },
+
+  async confirmEndMatch() {
+    if (!confirm('هل تريد إنهاء المباراة الآن؟')) return;
+    const match=await DB.getMatchById(currentAdminMatchId);
+    if (!match) return;
+    const tied=match.teamA_score_total===match.teamB_score_total;
+    match.winner=tied?null:(match.teamA_score_total>match.teamB_score_total?'A':'B');
+    match.status='ended'; match.ended_at=Date.now();
+    await DB.saveMatch(match);
+    await App.finalizeMatch(match);
+    Toast.show('انتهت المباراة','🏁');
+  },
+
+  async finalizeMatch(match) {
+    const wP = match.winner==='A' ? match.teamA_players : match.winner==='B' ? match.teamB_players : [];
+    const lP = match.winner==='A' ? match.teamB_players : match.winner==='B' ? match.teamA_players : [];
+    await Promise.all([
+      ...wP.map(id => DB.updatePlayerStats(id, true)),
+      ...lP.map(id => DB.updatePlayerStats(id, false)),
+      ...(!match.winner ? [...match.teamA_players,...match.teamB_players].map(id=>DB.updatePlayerStats(id,false)) : [])
+    ]);
+  },
+
+  showWinOverlay(match) {
+    document.getElementById('win-team-name').textContent=match.winner==='A'?'فاز فريق لنا! 🎉':'فاز فريق لهم! 🎉';
+    document.getElementById('win-sub-text').textContent=`${match.teamA_score_total} — ${match.teamB_score_total}`;
+    const rounds=match.rounds||[];
+    document.getElementById('win-stat-rounds').textContent=rounds.length;
+    const sc=rounds.map(r=>r.teamA_score+r.teamB_score);
+    document.getElementById('win-stat-high').textContent=sc.length?Math.max(...sc):0;
+    document.getElementById('win-stat-avg').textContent=sc.length?Math.round(sc.reduce((a,b)=>a+b,0)/sc.length):0;
+    document.getElementById('win-overlay').classList.add('show');
+  },
+
+  dismissWin() { document.getElementById('win-overlay').classList.remove('show'); },
+  toggleAllRounds() { showAllRounds=!showAllRounds; if(currentViewerMatchId) DB.listenMatch(currentViewerMatchId, m=>{ if(m) App._renderViewerUI(m); }); },
+
+  rematch() {
+    const match=cachedMatches.find(m=>m.id===currentViewerMatchId);
+    if (!match) return;
+    Router.navigate('/setup');
+    App.renderSetup();
+    setTimeout(()=>{
+      match.teamA_players.forEach((id,i)=>{ const e=document.getElementById(`setup-a-${i+1}`); if(e) e.value=id; });
+      match.teamB_players.forEach((id,i)=>{ const e=document.getElementById(`setup-b-${i+1}`); if(e) e.value=id; });
+    },200);
+  },
+
+  // ── ADMIN AUTH ──
+  ADMIN_PIN: '66778280',
+
+  checkAdminPin() {
+    const inp=document.getElementById('admin-pin-input');
+    if (inp.value.trim()===App.ADMIN_PIN) {
+      sessionStorage.setItem('nashra_admin','1'); inp.value='';
+      Router.navigate('/admin-panel');
+    } else {
+      inp.classList.add('error'); inp.value='';
+      setTimeout(()=>inp.classList.remove('error'),400);
+      Toast.show('باسورد خاطئ!','🔒');
+    }
+  },
+
+  isAdminAuthed() { return sessionStorage.getItem('nashra_admin')==='1'; },
+  adminLogout()   { sessionStorage.removeItem('nashra_admin'); Toast.show('تم الخروج','👋'); Router.navigate('/'); },
+
+  _renderAdminPanel() {
+    App.showPage('admin-panel');
+    App.renderAdminActiveMatches();
+    App.renderPlayersList();
+    const inp=document.getElementById('new-player-input'); if(inp) inp.value='';
+    const s=document.getElementById('players-search'); if(s) s.value='';
+  },
+
+  showAdminPanel() { Router.navigate('/admin-panel'); },
+
+  renderAdminActiveMatches() {
+    const active=cachedMatches.filter(m=>m.status==='active');
+    const sec=document.getElementById('admin-active-matches-section');
+    const list=document.getElementById('admin-active-matches-list');
+    if (!sec||!list) return;
+    if (!active.length) { sec.style.display='none'; return; }
+    sec.style.display='block';
+    list.innerHTML=active.map(m=>{
+      const date=new Date(m.created_at).toLocaleDateString('ar-SA',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+      const tA=m.teamA_names?.join('، ')||'—', tB=m.teamB_names?.join('، ')||'—';
+      return `<div style="padding:14px 16px;border-bottom:1px solid var(--border)">
+        <div class="flex-between" style="margin-bottom:8px">
+          <div style="font-size:.75rem;color:var(--muted)">${date} · ${m.rounds_count||0} جولة</div>
+          <div style="font-size:.9rem;font-weight:900;color:var(--green)">${m.teamA_score_total||0} — ${m.teamB_score_total||0}</div>
+        </div>
+        <div style="font-size:.88rem;font-weight:700;margin-bottom:10px">
+          <span style="color:var(--team-a)">${tA}</span>
+          <span style="color:var(--muted);margin:0 6px;font-weight:400">vs</span>
+          <span style="color:var(--team-b)">${tB}</span>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-secondary btn-sm" style="flex:1;font-size:.8rem" onclick="App.loadAdmin('${m.id}','${m.admin_token}')">✏️ فتح التسجيل</button>
+          <button class="btn btn-danger btn-sm" style="flex:1;font-size:.8rem" onclick="App.adminForceEndMatch('${m.id}')">إنهاء قسري ✕</button>
+        </div>
+      </div>`;
+    }).join('');
+  },
+
+  async adminForceEndMatch(matchId) {
+    const match=await DB.getMatchById(matchId);
+    if (!match) return;
+    const tA=match.teamA_names?.join('، '), tB=match.teamB_names?.join('، ');
+    if (!confirm(`إنهاء مباراة\n${tA} vs ${tB}\nالنتيجة: ${match.teamA_score_total||0} — ${match.teamB_score_total||0}\n\nتأكيد؟`)) return;
+    const tied=match.teamA_score_total===match.teamB_score_total;
+    match.winner=tied?null:(match.teamA_score_total>match.teamB_score_total?'A':'B');
+    match.status='ended'; match.ended_at=Date.now();
+    await DB.saveMatch(match);
+    await App.finalizeMatch(match);
+    Toast.show('تم إنهاء المباراة','🏁');
+  },
+
+  // ── PLAYERS VIEW ──
+  showPlayers() { App.showPage('players'); App.renderPlayersView(); },
+
+  renderPlayersView(filter='') {
+    const players=cachedPlayers.filter(p=>!filter||p.name.includes(filter)).sort((a,b)=>b.matches_played-a.matches_played);
+    const cont=document.getElementById('players-view-content'); if(!cont) return;
+    if (!players.length) { cont.innerHTML='<div class="empty-state"><div class="empty-icon">👥</div><div class="empty-text">لا يوجد لاعبون بعد</div></div>'; return; }
+    cont.innerHTML=players.map(p=>{
+      const pct=p.matches_played>0?Math.round((p.wins/p.matches_played)*100):0;
+      const c=pct>=60?'var(--green)':pct>=40?'var(--accent)':'#ff6b6b';
+      return `<div class="player-item" onclick="App.showProfile('${p.id}')">
+        <div class="player-initial">${p.name[0]}</div>
+        <div class="player-info">
+          <div class="player-name">${p.name}</div>
+          <div class="player-wl">${p.matches_played||0} مباراة · ${p.wins||0}ف ${p.losses||0}خ</div>
+          <div class="player-pct-wrap"><div class="player-pct-bar-bg"><div class="player-pct-bar" style="width:${pct}%;background:${c}"></div></div><span class="player-pct-num" style="color:${c}">${p.matches_played>0?pct+'%':'-'}</span></div>
+        </div><div class="player-arrow">›</div>
+      </div>`;
+    }).join('');
+  },
+
+  filterPlayersView() { App.renderPlayersView(document.getElementById('players-view-search').value.trim()); },
+
+  renderPlayersList(filter='') {
+    const players=cachedPlayers.filter(p=>!filter||p.name.includes(filter)).sort((a,b)=>b.matches_played-a.matches_played);
+    const cont=document.getElementById('players-list-content'); if(!cont) return;
+    if (!players.length) { cont.innerHTML='<div class="empty-state"><div class="empty-icon">👥</div><div class="empty-text">لا يوجد لاعبون — أضف أول لاعب!</div></div>'; return; }
+    cont.innerHTML=players.map(p=>{
+      const pct=p.matches_played>0?Math.round((p.wins/p.matches_played)*100):0;
+      const c=pct>=60?'var(--green)':pct>=40?'var(--accent)':'#ff6b6b';
+      return `<div class="player-item">
+        <div class="player-initial" onclick="App.showProfile('${p.id}')" style="cursor:pointer">${p.name[0]}</div>
+        <div class="player-info" onclick="App.showProfile('${p.id}')" style="cursor:pointer">
+          <div class="player-name">${p.name}</div>
+          <div class="player-wl">${p.matches_played||0} مباراة · ${p.wins||0}ف ${p.losses||0}خ</div>
+          <div class="player-pct-wrap"><div class="player-pct-bar-bg"><div class="player-pct-bar" style="width:${pct}%;background:${c}"></div></div><span class="player-pct-num" style="color:${c}">${p.matches_played>0?pct+'%':'-'}</span></div>
+        </div>
+        <button class="player-delete-btn" onclick="App.deletePlayer('${p.id}','${p.name.replace(/'/g,"\\'")}')">✕</button>
+      </div>`;
+    }).join('');
+  },
+
+  filterPlayers() { App.renderPlayersList(document.getElementById('players-search').value.trim()); },
+
+  async addNewPlayer() {
+    const inp=document.getElementById('new-player-input');
+    const name=inp.value.trim();
+    if (!name) { Toast.show('أدخل اسم اللاعب','⚠️'); return; }
+    if (cachedPlayers.find(p=>p.name===name)) { Toast.show('هذا الاسم موجود مسبقاً','⚠️'); return; }
+    await DB.upsertPlayer(name);
+    inp.value=''; inp.focus();
+    Toast.show(`تمت إضافة "${name}"`,'✅');
+  },
+
+  async deletePlayer(id, name) {
+    const active=cachedMatches.find(m=>m.status==='active'&&[...(m.teamA_players||[]),...(m.teamB_players||[])].includes(id));
+    if (active) { Toast.show('اللاعب في مباراة شغالة، لا يمكن حذفه','⚠️'); return; }
+    if (confirm(`حذف "${name}"؟`)) { await DB.deletePlayer(id); Toast.show('تم الحذف','🗑️'); }
+  },
+
+  // ── PROFILE ──
+  showProfile(playerId) { Router.navigate('/p/'+playerId); },
+
+  _renderProfile(playerId) {
+    const player=cachedPlayers.find(p=>p.id===playerId);
+    if (!player) { App.renderHome(); return; }
+    document.getElementById('profile-header-name').textContent=player.name;
+    document.getElementById('profile-initial').textContent=player.name[0];
+    document.getElementById('profile-name').textContent=player.name;
+    document.getElementById('p-wins').textContent=player.wins||0;
+    document.getElementById('p-losses').textContent=player.losses||0;
+    document.getElementById('p-played').textContent=player.matches_played||0;
+    document.getElementById('p-pct').textContent=player.matches_played>0?Math.round((player.wins/player.matches_played)*100)+'%':'-';
+
+    const allM=cachedMatches.filter(m=>m.status==='ended'&&[...(m.teamA_players||[]),...(m.teamB_players||[])].includes(playerId));
+    let streak=0;
+    for (const m of allM) { const isA=(m.teamA_players||[]).includes(playerId); if((isA&&m.winner==='A')||(!isA&&m.winner==='B')) streak++; else break; }
+    document.getElementById('profile-streak-wrap').innerHTML=streak>=2?`<span class="win-streak-badge">🔥 ${streak} انتصارات متتالية</span>`:'';
+
+    const listEl=document.getElementById('profile-matches-list');
+    const matches=allM.slice(0,10);
+    if (!matches.length) { listEl.innerHTML='<div class="empty-state"><div class="empty-text">لا توجد مباريات بعد</div></div>'; }
+    else {
+      listEl.innerHTML=matches.map(m=>{
+        const isA=(m.teamA_players||[]).includes(playerId);
+        const myS=isA?m.teamA_score_total:m.teamB_score_total;
+        const thS=isA?m.teamB_score_total:m.teamA_score_total;
+        const win=(isA&&m.winner==='A')||(!isA&&m.winner==='B');
+        const date=new Date(m.created_at).toLocaleDateString('ar-SA',{month:'short',day:'numeric'});
+        return `<div class="match-item">
+          <div class="match-result-badge ${win?'result-w':'result-l'}">${win?'ف':'خ'}</div>
+          <div class="match-info"><div class="match-vs">ضد: ${(isA?m.teamB_names:m.teamA_names).join('، ')}</div><div class="match-meta">${date} · ${m.rounds_count||0} جولة</div></div>
+          <div class="match-score-end">${myS}–${thS}</div>
+        </div>`;
+      }).join('');
+    }
+    App._renderTeammates(playerId);
+    App.profileTab('matches');
+    App.showPage('profile');
+  },
+
+  profileTab(tab) {
+    document.getElementById('ptab-matches').classList.toggle('active',tab==='matches');
+    document.getElementById('ptab-teammates').classList.toggle('active',tab==='teammates');
+    document.getElementById('profile-tab-matches').style.display=tab==='matches'?'block':'none';
+    document.getElementById('profile-tab-teammates').style.display=tab==='teammates'?'block':'none';
+  },
+
+  // ── LEADERBOARD ──
+  showLeaderboard() { App.showPage('leaderboard'); App.renderLeaderboard(); },
+
+  lbSort(field) {
+    lbSortField=field;
+    document.getElementById('lb-sort-pct').classList.toggle('active',field==='pct');
+    document.getElementById('lb-sort-w').classList.toggle('active',field==='wins');
+    document.getElementById('lb-sort-m').classList.toggle('active',field==='matches');
+    App.renderLeaderboard();
+  },
+
+  renderLeaderboard() {
+    const players=cachedPlayers.filter(p=>p.matches_played>0);
+    const sorted=[...players].sort((a,b)=>{
+      if (lbSortField==='pct') { const pA=a.wins/a.matches_played, pB=b.wins/b.matches_played; return pB-pA||b.wins-a.wins; }
+      if (lbSortField==='wins') return b.wins-a.wins||b.matches_played-a.matches_played;
+      return b.matches_played-a.matches_played;
+    });
+    const el=document.getElementById('lb-list');
+    if (!sorted.length) { el.innerHTML='<div class="empty-state"><div class="empty-icon">🏆</div><div class="empty-text">لا يوجد لاعبون بعد</div></div>'; return; }
+    const rc=i=>i===0?'gold':i===1?'silver':i===2?'bronze':'';
+    const ri=i=>i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1;
+    el.innerHTML=sorted.map((p,i)=>{
+      const pct=Math.round(p.wins/p.matches_played*100);
+      return `<div class="lb-row" onclick="App.showProfile('${p.id}')">
+        <span class="lb-rank-num ${rc(i)}">${ri(i)}</span>
+        <span class="lb-player-name">${p.name}</span>
+        <span class="lb-cell lb-cell-pct">${pct}%</span>
+        <span class="lb-cell lb-cell-w">${p.wins}</span>
+        <span class="lb-cell" style="color:var(--muted)">${p.matches_played}</span>
+      </div>`;
+    }).join('');
+  },
+
+  // ── MATCHES ──
+  showMatches() {
+    App.showPage('matches');
+    const el=document.getElementById('all-matches-list');
+    if (!cachedMatches.length) { el.innerHTML='<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">لا توجد مباريات بعد</div></div>'; return; }
+    el.innerHTML=cachedMatches.map(m=>{
+      const date=new Date(m.created_at).toLocaleDateString('ar-SA',{weekday:'short',month:'short',day:'numeric'});
+      const sBadge=m.status==='active'
+        ? '<span class="status-badge status-active" style="font-size:.7rem;padding:2px 8px"><span class="status-dot"></span>شغالة</span>'
+        : '<span class="status-badge status-ended" style="font-size:.7rem;padding:2px 8px"><span class="status-dot"></span>انتهت</span>';
+      const winner=m.winner==='A'?'🏆 فاز لنا':m.winner==='B'?'🏆 فاز لهم':'';
+      return `<div class="matches-item" onclick="Router.navigate('/m/${m.id}')">
+        <div class="matches-teams"><span>${m.teamA_names?.join('،')}</span><span style="color:var(--muted);font-weight:400">vs</span><span>${m.teamB_names?.join('،')}</span></div>
+        <div class="matches-meta flex-between"><span>${date} · ${m.rounds_count||0} جولة · ${m.teamA_score_total||0}–${m.teamB_score_total||0} ${winner}</span>${sBadge}</div>
+      </div>`;
+    }).join('');
+  },
+
+  // ── HELPERS ──
+  _updateQuickLabel(team) { const e=document.getElementById('quick-label'); if(e) e.textContent=`نقاط سريعة — ${team}`; },
+
+  _renderRoundsList(cid, match, limit) {
+    const el=document.getElementById(cid);
+    const rounds=match.rounds||[];
+    if (!rounds.length) { el.innerHTML='<div class="empty-state"><div class="empty-text">لا توجد جولات بعد</div></div>'; return; }
+    el.innerHTML=rounds.slice(0,limit).map((r,i)=>`
+      <div class="round-row">
+        <span class="round-num">${rounds.length-i}</span>
+        <span class="round-score-a">${r.teamA_score}</span>
+        <span class="round-score-b">${r.teamB_score}</span>
+        <span class="round-total">${r.teamA_score+r.teamB_score}</span>
+      </div>`).join('');
+  },
+
+  _updateScoreDisplay(id, val) {
+    const el=document.getElementById(id);
+    if (el && el.textContent!==String(val)) { el.textContent=val; el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); }
+  },
+
+  _renderMatchStats(match) {
+    const w=document.getElementById('viewer-match-stats');
+    const rounds=match.rounds||[];
+    if (!w||!rounds.length) { if(w) w.style.display='none'; return; }
+    w.style.display='grid';
+    document.getElementById('stat-rounds').textContent=match.rounds_count||0;
+    document.getElementById('stat-best-a').textContent=Math.max(...rounds.map(r=>r.teamA_score));
+    document.getElementById('stat-best-b').textContent=Math.max(...rounds.map(r=>r.teamB_score));
+  },
+
+  _renderChart(rounds, target) {
+    const wrap=document.getElementById('viewer-chart-wrap'), svg=document.getElementById('viewer-chart');
+    if (!wrap||!svg||!rounds||rounds.length<2) { if(wrap) wrap.style.display='none'; return; }
+    wrap.style.display='block';
+    const ordered=[...rounds].reverse();
+    const pA=[0], pB=[0];
+    ordered.forEach(r=>{ pA.push(pA[pA.length-1]+r.teamA_score); pB.push(pB[pB.length-1]+r.teamB_score); });
+    const W=300,H=80,P=4, max=Math.max(...pA,...pB,target*.3);
+    const tx=i=>(P+i*(W-P*2)/(pA.length-1)).toFixed(1);
+    const ty=v=>(H-P-(v/max)*(H-P*2)).toFixed(1);
+    const mk=pts=>pts.map((v,i)=>`${i===0?'M':'L'}${tx(i)},${ty(v)}`).join(' ');
+    svg.innerHTML=`
+      <line x1="${P}" y1="${ty(target)}" x2="${W-P}" y2="${ty(target)}" stroke="#333" stroke-width="1" stroke-dasharray="4,3"/>
+      <path d="${mk(pA)}" fill="none" stroke="var(--team-a)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="${mk(pB)}" fill="none" stroke="var(--team-b)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="${tx(pA.length-1)}" cy="${ty(pA[pA.length-1])}" r="3" fill="var(--team-a)"/>
+      <circle cx="${tx(pB.length-1)}" cy="${ty(pB[pB.length-1])}" r="3" fill="var(--team-b)"/>`;
+  },
+
+  _renderTeammates(playerId) {
+    const matches=cachedMatches.filter(m=>m.status==='ended'&&[...(m.teamA_players||[]),...(m.teamB_players||[])].includes(playerId));
+    const stats={};
+    matches.forEach(m=>{
+      const isA=(m.teamA_players||[]).includes(playerId);
+      const win=(isA&&m.winner==='A')||(!isA&&m.winner==='B');
+      (isA?m.teamA_players:m.teamB_players).forEach(tid=>{ if(tid===playerId) return; if(!stats[tid]) stats[tid]={wins:0,games:0}; stats[tid].games++; if(win) stats[tid].wins++; });
+    });
+    const el=document.getElementById('profile-teammates-list');
+    const entries=Object.entries(stats).sort((a,b)=>(b[1].wins/b[1].games||0)-(a[1].wins/a[1].games||0)).slice(0,8);
+    if (!entries.length) { el.innerHTML='<div class="empty-state"><div class="empty-text">لا يوجد بيانات كافية</div></div>'; return; }
+    el.innerHTML=entries.map(([tid,s])=>{
+      const p=cachedPlayers.find(x=>x.id===tid); if(!p) return '';
+      const pct=s.games>0?Math.round(s.wins/s.games*100):0;
+      const c=pct>=60?'var(--green)':pct>=40?'var(--accent)':'#ff6b6b';
+      return `<div class="teammate-item">
+        <div class="player-initial" style="cursor:pointer" onclick="App.showProfile('${p.id}')">${p.name[0]}</div>
+        <div class="player-info"><div class="player-name">${p.name}</div><div class="teammate-vs">${s.games} مباراة معاً</div></div>
+        <div class="teammate-record"><div class="teammate-record-main" style="color:${c}">${s.wins}/${s.games}</div><div class="teammate-record-pct">${pct}% فوز</div></div>
+      </div>`;
+    }).join('');
+  }
+};
+
+// ══════════════════════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════════════════════
+const Toast = {
+  show(msg, icon='') {
+    const cont=document.getElementById('toast-container');
+    const el=document.createElement('div'); el.className='toast';
+    el.innerHTML=icon?`<span class="toast-icon">${icon}</span><span>${msg}</span>`:`<span>${msg}</span>`;
+    cont.appendChild(el);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.add('show')));
+    setTimeout(()=>{ el.classList.remove('show'); setTimeout(()=>el.remove(),400); },2800);
+  }
+};
+
+// ══════════════════════════════════════════════════════════
+// INIT — يبدأ listeners للبيانات ثم يفتح التطبيق
+// ══════════════════════════════════════════════════════════
+async function init() {
+  try {
+    // Realtime listeners للبيانات المشتركة
+    DB.listenPlayers(players => {
+      cachedPlayers = players;
+      // تحديث الصفحة الحالية لو كانت مفتوحة
+      const active = document.querySelector('.page.active');
+      if (active?.id === 'page-players') App.renderPlayersView();
+      if (active?.id === 'page-admin-panel') App.renderPlayersList();
+      if (active?.id === 'page-leaderboard') App.renderLeaderboard();
+    });
+
+    DB.listenMatches(matches => {
+      cachedMatches = matches;
+      const active = document.querySelector('.page.active');
+      if (active?.id === 'page-home') App.renderHome();
+      if (active?.id === 'page-matches') App.showMatches();
+      if (active?.id === 'page-admin-panel') App.renderAdminActiveMatches();
+    });
+
+    // انتظر أول تحميل
+    await new Promise(resolve => setTimeout(resolve, 1200));
+    document.getElementById('loading-overlay').style.display = 'none';
+    Router.init();
+  } catch(e) {
+    console.error(e);
+    document.getElementById('loading-overlay').innerHTML =
+      '<div style="text-align:center;padding:32px"><div style="font-size:2rem;margin-bottom:12px">❌</div><div style="color:var(--muted)">خطأ في الاتصال بـ Firebase<br>تحقق من الإعدادات</div></div>';
+  }
+}
+
+init();
+</script>
+</body>
+</html>
