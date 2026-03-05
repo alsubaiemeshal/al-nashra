@@ -264,7 +264,7 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
   <div id="home-hero">
     <span class="hero-logo">النشرة</span>
     <div class="hero-title">جنجفة.</div>
-    <div class="hero-sub">سجّل، تابع، واحسب النتائج</div>
+    <div class="hero-sub">جاخور العزة والكرامة</div>
     <div class="home-actions">
       <button class="btn btn-primary" onclick="App.goSetup()"><span>ابدأ مباراة</span><span>⚡</span></button>
       <div id="active-matches-section" style="display:none">
@@ -275,6 +275,11 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
       <button class="btn btn-ghost" onclick="App.goLeaderboard()"><span>🏆 الترتيب العام</span></button>
       <button class="btn btn-ghost" onclick="App.goAdminLogin()" style="border-color:rgba(200,169,110,.2);color:var(--muted)"><span>🔐 الأدمن</span></button>
     </div>
+  </div>
+  <!-- أفضل اللاعبين -->
+  <div style="padding:0 16px 32px" id="home-top-players" style="display:none">
+    <div style="font-size:.75rem;font-weight:800;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px">🏆 أفضل اللاعبين</div>
+    <div id="home-top-players-list"></div>
   </div>
 </div>
 
@@ -770,6 +775,7 @@ const App = {
       sec.style.display = 'block';
       btn.innerHTML = `<span>🟢 مباراة شغالة (${active.length})</span>`;
     } else { sec.style.display = 'none'; }
+    App.renderTopPlayers();
   },
 
   // ── SETUP ──
@@ -1300,6 +1306,58 @@ const App = {
       <circle cx="${tx(pB.length-1)}" cy="${ty(pB[pB.length-1])}" r="3" fill="var(--team-b)"/>`;
   },
 
+  renderTopPlayers() {
+    const wrap = document.getElementById('home-top-players');
+    const list = document.getElementById('home-top-players-list');
+    if (!wrap || !list) return;
+    const players = cachedPlayers.filter(p => p.matches_played >= 1);
+    if (!players.length) { wrap.style.display='none'; return; }
+    wrap.style.display='block';
+
+    // أعلى نسبة فوز
+    const byPct = [...players].sort((a,b) => {
+      const pA=a.wins/a.matches_played, pB=b.wins/b.matches_played;
+      return pB-pA || b.wins-a.wins;
+    }).slice(0,3);
+
+    // أكثر انتصارات
+    const byWins = [...players].sort((a,b) => b.wins-a.wins || b.matches_played-a.matches_played).slice(0,3);
+
+    const medals = ['🥇','🥈','🥉'];
+    const colors = ['#ffd700','#c0c0c0','#cd7f32'];
+
+    list.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+          <div style="font-size:.7rem;font-weight:800;color:var(--accent);letter-spacing:.5px;margin-bottom:8px">نسبة الفوز %</div>
+          ${byPct.map((p,i) => {
+            const pct = Math.round(p.wins/p.matches_played*100);
+            return `<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;margin-bottom:6px;cursor:pointer" onclick="App.showProfile('${p.id}')">
+              <span style="font-size:1.1rem">${medals[i]}</span>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:.82rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.name}</div>
+                <div style="font-size:.7rem;color:var(--muted)">${p.wins}ف ${p.losses}خ</div>
+              </div>
+              <div style="font-size:.9rem;font-weight:900;color:${colors[i]}">${pct}%</div>
+            </div>`;
+          }).join('')}
+        </div>
+        <div>
+          <div style="font-size:.7rem;font-weight:800;color:var(--green);letter-spacing:.5px;margin-bottom:8px">أكثر انتصارات</div>
+          ${byWins.map((p,i) => {
+            return `<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;margin-bottom:6px;cursor:pointer" onclick="App.showProfile('${p.id}')">
+              <span style="font-size:1.1rem">${medals[i]}</span>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:.82rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.name}</div>
+                <div style="font-size:.7rem;color:var(--muted)">${p.matches_played} مباراة</div>
+              </div>
+              <div style="font-size:.9rem;font-weight:900;color:${colors[i]}">${p.wins}ف</div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+  },
+
   _renderTeammates(playerId) {
     const matches=cachedMatches.filter(m=>m.status==='ended'&&[...(m.teamA_players||[]),...(m.teamB_players||[])].includes(playerId));
     const stats={};
@@ -1351,6 +1409,7 @@ async function init() {
       if (active?.id === 'page-players') App.renderPlayersView();
       if (active?.id === 'page-admin-panel') App.renderPlayersList();
       if (active?.id === 'page-leaderboard') App.renderLeaderboard();
+      if (active?.id === 'page-home') App.renderTopPlayers();
     });
 
     DB.listenMatches(matches => {
