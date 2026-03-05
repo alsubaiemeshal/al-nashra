@@ -340,7 +340,10 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
     <div class="flex-between" style="margin-bottom:10px">
       <button class="back-btn" onclick="App.goHome()">←</button>
       <div id="viewer-status-badge"></div>
-      <div style="font-size:.8rem;color:var(--muted)" id="viewer-rounds-count"></div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="font-size:.8rem;color:var(--muted)" id="viewer-rounds-count"></div>
+        <button onclick="App.toggleSpeech()" id="speech-btn-viewer" style="background:none;border:none;font-size:1.2rem;cursor:pointer;padding:2px">🔊</button>
+      </div>
     </div>
     <div class="score-teams">
       <div class="score-team"><div class="score-team-name text-a">لنا</div><div class="score-num text-a" id="viewer-score-a">0</div><div class="score-target text-muted">/250</div></div>
@@ -397,7 +400,10 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
     <div class="flex-between" style="margin-bottom:10px">
       <button class="back-btn" onclick="App.goHome()">←</button>
       <div id="admin-status-badge"></div>
-      <div style="font-size:.8rem;color:var(--muted)" id="admin-rounds-count"></div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="font-size:.8rem;color:var(--muted)" id="admin-rounds-count"></div>
+        <button onclick="App.toggleSpeech()" id="speech-btn-admin" style="background:none;border:none;font-size:1.2rem;cursor:pointer;padding:2px">🔊</button>
+      </div>
     </div>
     <div class="score-teams">
       <div class="score-team"><div class="score-team-name text-a">لنا</div><div class="score-num text-a" id="admin-score-a">0</div><div class="score-target text-muted">/250</div></div>
@@ -850,6 +856,16 @@ const App = {
   copyAdminLink()  { App._copy(document.getElementById('admin-link-display').textContent,'🔐 تم نسخ رابط التسجيل'); },
   copyViewerLinkFromViewer() { App._copy(location.origin+location.pathname+'#/m/'+currentViewerMatchId,'✅ تم نسخ الرابط'); },
 
+  toggleSpeech() {
+    Speech.enabled = !Speech.enabled;
+    const icon = Speech.enabled ? '🔊' : '🔇';
+    ['speech-btn-admin','speech-btn-viewer'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = icon;
+    });
+    Toast.show(Speech.enabled ? 'الصوت شغال' : 'الصوت مكتوم', icon);
+  },
+
   shareProfileWhatsApp() {
     const hash = window.location.hash;
     const playerId = hash.split('/').pop();
@@ -912,6 +928,10 @@ ${link}`;
     App._updateScoreDisplay('viewer-score-b', match.teamB_score_total);
     const sA=match.teamA_score_total, sB=match.teamB_score_total;
     const elA=document.getElementById('viewer-score-a'), elB=document.getElementById('viewer-score-b');
+    // نطق النتيجة لما تتغير
+    const prevA = parseInt(elA.dataset.prev||'0'), prevB = parseInt(elB.dataset.prev||'0');
+    if ((sA!==prevA||sB!==prevB) && (prevA>0||prevB>0)) Speech.announceScore(match);
+    elA.dataset.prev = sA; elB.dataset.prev = sB;
     if(sA===sB){elA.style.color='var(--muted)';elB.style.color='var(--muted)';}
     else if(sA>sB){elA.style.color='#ff6b6b';elB.style.color='var(--green)';}
     else{elA.style.color='var(--green)';elB.style.color='#ff6b6b';}
@@ -1010,6 +1030,7 @@ ${link}`;
       return;
     }
     await DB.saveMatch(match);
+    Speech.announceScore(match);
   },
 
   quickScore(val) {
@@ -1536,6 +1557,45 @@ ${match.teamA_score_total||0} — ${match.teamB_score_total||0}
 // ══════════════════════════════════════════════════════════
 // TOAST
 // ══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
+// SPEECH
+// ══════════════════════════════════════════════════════════
+const Speech = {
+  enabled: true,
+  _voice: null,
+
+  init() {
+    const load = () => {
+      const voices = window.speechSynthesis.getVoices();
+      // ابحث عن صوت عربي
+      Speech._voice = voices.find(v => v.lang.startsWith('ar')) || null;
+    };
+    load();
+    window.speechSynthesis.onvoiceschanged = load;
+  },
+
+  speak(text) {
+    if (!Speech.enabled || !window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    if (Speech._voice) {
+      u.voice = Speech._voice;
+      u.lang = Speech._voice.lang;
+    } else {
+      u.lang = 'ar-SA';
+    }
+    u.rate = 0.9;
+    u.pitch = 1;
+    window.speechSynthesis.speak(u);
+  },
+
+  announceScore(match) {
+    const sA = match.teamA_score_total;
+    const sB = match.teamB_score_total;
+    Speech.speak(`لنا ${sA} لهم ${sB}`);
+  }
+};
+
 const Toast = {
   show(msg, icon='') {
     const cont=document.getElementById('toast-container');
@@ -1551,6 +1611,7 @@ const Toast = {
 // INIT — يبدأ listeners للبيانات ثم يفتح التطبيق
 // ══════════════════════════════════════════════════════════
 async function init() {
+  Speech.init();
   try {
     // Realtime listeners للبيانات المشتركة
     DB.listenPlayers(players => {
