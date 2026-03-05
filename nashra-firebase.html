@@ -382,7 +382,10 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
     </div>
     <button class="btn btn-ghost btn-sm" id="show-all-rounds-btn" onclick="App.toggleAllRounds()" style="display:none">عرض كل الجولات</button>
     <div class="spacer"></div>
-    <button class="btn btn-secondary btn-sm" onclick="App.copyViewerLinkFromViewer()">نسخ رابط المشاهدة 🔗</button>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-secondary btn-sm" style="flex:1" onclick="App.copyViewerLinkFromViewer()">نسخ الرابط 🔗</button>
+      <button class="btn btn-secondary btn-sm" style="flex:1;background:rgba(37,211,102,.1);border-color:rgba(37,211,102,.3);color:#25d366" onclick="App.shareWhatsApp()">واتساب 📲</button>
+    </div>
     <div id="rematch-section" style="display:none"><div class="spacer-sm"></div><button class="btn btn-secondary btn-sm" onclick="App.rematch()">🔄 ريماتش بنفس اللاعبين</button></div>
     <div class="spacer-lg"></div>
   </div>
@@ -508,6 +511,9 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
       </div>
     </div>
     <div id="profile-streak-wrap" style="text-align:center;padding:8px 0 4px"></div>
+    <div style="padding:8px 16px 4px;display:flex;justify-content:center">
+      <button class="btn btn-secondary btn-sm" style="width:auto;padding:0 24px;background:rgba(37,211,102,.1);border-color:rgba(37,211,102,.3);color:#25d366" onclick="App.shareProfileWhatsApp()">مشاركة البروفايل 📲</button>
+    </div>
     <div class="spacer"></div>
     <div class="profile-tabs">
       <button class="profile-tab active" id="ptab-matches" onclick="App.profileTab('matches')">المباريات</button>
@@ -523,6 +529,7 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
 <div id="page-matches" class="page">
   <div class="header"><button class="back-btn" onclick="App.goHome()">←</button><span class="header-title">سجل المباريات</span></div>
   <div class="page-content" style="padding-top:16px">
+    <div id="biggest-win-section" style="display:none;margin-bottom:16px"></div>
     <div class="card"><div id="all-matches-list"></div></div>
     <div class="spacer-lg"></div>
   </div>
@@ -843,6 +850,42 @@ const App = {
   copyAdminLink()  { App._copy(document.getElementById('admin-link-display').textContent,'🔐 تم نسخ رابط التسجيل'); },
   copyViewerLinkFromViewer() { App._copy(location.origin+location.pathname+'#/m/'+currentViewerMatchId,'✅ تم نسخ الرابط'); },
 
+  shareProfileWhatsApp() {
+    const hash = window.location.hash;
+    const playerId = hash.split('/').pop();
+    const player = cachedPlayers.find(p => p.id === playerId);
+    if (!player) return;
+    const link = location.origin + location.pathname + '#/p/' + playerId;
+    const pct = player.matches_played > 0 ? Math.round(player.wins / player.matches_played * 100) : 0;
+    const text = `🎴 بروفايل ${player.name} — جنجفة
+
+🏆 ${player.wins} فوز
+❌ ${player.losses} خسارة
+📊 ${player.matches_played} مباراة
+⚡ ${pct}% نسبة فوز
+
+👁 شوف بروفايله:
+${link}`;
+    window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
+  },
+
+  shareWhatsApp() {
+    const match = cachedMatches.find(m => m.id === currentViewerMatchId);
+    const link = location.origin + location.pathname + '#/m/' + currentViewerMatchId;
+    const tA = match?.teamA_names?.join('، ') || 'لنا';
+    const tB = match?.teamB_names?.join('، ') || 'لهم';
+    const sA = match?.teamA_score_total || 0;
+    const sB = match?.teamB_score_total || 0;
+    const status = match?.status === 'active' ? '🟢 شغالة' : '🏁 انتهت';
+    const text = `🎴 جنجفة — النشرة
+${status}
+${tA} ${sA} — ${sB} ${tB}
+
+👁 تابع النتيجة:
+${link}`;
+    window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
+  },
+
   _copy(text, msg) {
     if (navigator.clipboard) navigator.clipboard.writeText(text).then(() => Toast.show(msg,''));
     else { const t=document.createElement('textarea'); t.value=text; document.body.appendChild(t); t.select(); document.execCommand('copy'); document.body.removeChild(t); Toast.show(msg,''); }
@@ -867,6 +910,11 @@ const App = {
     document.getElementById('viewer-rounds-count').textContent = (match.rounds_count||0)+' جولة';
     App._updateScoreDisplay('viewer-score-a', match.teamA_score_total);
     App._updateScoreDisplay('viewer-score-b', match.teamB_score_total);
+    const sA=match.teamA_score_total, sB=match.teamB_score_total;
+    const elA=document.getElementById('viewer-score-a'), elB=document.getElementById('viewer-score-b');
+    if(sA===sB){elA.style.color='var(--muted)';elB.style.color='var(--muted)';}
+    else if(sA>sB){elA.style.color='#ff6b6b';elB.style.color='var(--green)';}
+    else{elA.style.color='var(--green)';elB.style.color='#ff6b6b';}
     const pA=Math.min(100,Math.round(match.teamA_score_total/match.target_score*100));
     const pB=Math.min(100,Math.round(match.teamB_score_total/match.target_score*100));
     document.getElementById('prog-a').style.width=pA+'%';
@@ -913,6 +961,11 @@ const App = {
     document.getElementById('admin-rounds-count').textContent=(match.rounds_count||0)+' جولة';
     App._updateScoreDisplay('admin-score-a', match.teamA_score_total);
     App._updateScoreDisplay('admin-score-b', match.teamB_score_total);
+    const sAa=match.teamA_score_total, sBa=match.teamB_score_total;
+    const elAa=document.getElementById('admin-score-a'), elBa=document.getElementById('admin-score-b');
+    if(sAa===sBa){elAa.style.color='var(--muted)';elBa.style.color='var(--muted)';}
+    else if(sAa>sBa){elAa.style.color='#ff6b6b';elBa.style.color='var(--green)';}
+    else{elAa.style.color='var(--green)';elBa.style.color='#ff6b6b';}
     const pA=Math.min(100,Math.round(match.teamA_score_total/match.target_score*100));
     const pB=Math.min(100,Math.round(match.teamB_score_total/match.target_score*100));
     document.getElementById('admin-prog-a').style.width=pA+'%';
@@ -1299,6 +1352,33 @@ ${match.teamA_score_total||0} — ${match.teamB_score_total||0}
     App.showPage('matches');
     const el=document.getElementById('all-matches-list');
     if (!cachedMatches.length) { el.innerHTML='<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">لا توجد مباريات بعد</div></div>'; return; }
+
+    // أكبر فرق فوز
+    const ended = cachedMatches.filter(m => m.status==='ended' && m.winner);
+    const bigWin = ended.sort((a,b) => {
+      const diffA = Math.abs(a.teamA_score_total - a.teamB_score_total);
+      const diffB = Math.abs(b.teamA_score_total - b.teamB_score_total);
+      return diffB - diffA;
+    })[0];
+
+    const bigWinEl = document.getElementById('biggest-win-section');
+    if (bigWin && bigWinEl) {
+      const diff = Math.abs(bigWin.teamA_score_total - bigWin.teamB_score_total);
+      const winTeam = bigWin.winner==='A' ? bigWin.teamA_names?.join('، ') : bigWin.teamB_names?.join('، ');
+      const loseTeam = bigWin.winner==='A' ? bigWin.teamB_names?.join('، ') : bigWin.teamA_names?.join('، ');
+      const winScore = bigWin.winner==='A' ? bigWin.teamA_score_total : bigWin.teamB_score_total;
+      const loseScore = bigWin.winner==='A' ? bigWin.teamB_score_total : bigWin.teamA_score_total;
+      bigWinEl.style.display='block';
+      bigWinEl.innerHTML=`
+        <div style="font-size:.75rem;font-weight:800;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px">💥 أكبر فرق فوز</div>
+        <div style="background:var(--bg2);border:1px solid rgba(200,169,110,.3);border-radius:16px;padding:14px 16px;cursor:pointer" onclick="Router.navigate('/m/${bigWin.id}')">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+            <div style="font-size:.85rem;font-weight:700"><span style="color:var(--green)">${winTeam}</span> <span style="color:var(--muted);font-weight:400">vs</span> <span style="color:#ff6b6b">${loseTeam}</span></div>
+            <div style="font-size:1.1rem;font-weight:900;color:var(--accent)">فرق ${diff}</div>
+          </div>
+          <div style="font-size:.8rem;color:var(--muted)">${winScore} — ${loseScore} · ${bigWin.rounds_count||0} جولة</div>
+        </div>`;
+    } else if (bigWinEl) { bigWinEl.style.display='none'; }
     el.innerHTML=cachedMatches.map(m=>{
       const date=new Date(m.created_at).toLocaleDateString('ar-SA',{weekday:'short',month:'short',day:'numeric'});
       const sBadge=m.status==='active'
