@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -557,10 +558,9 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min
 <!-- ════════════════════════════════════════════════════════
   Firebase SDK
 ════════════════════════════════════════════════════════ -->
-<script type="module">
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getDatabase, ref, set, get, push, update, remove, onValue, off, child }
-  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script>
 
 // ══════════════════════════════════════════════════════════
 // 🔥 ضع إعدادات Firebase هنا — FIREBASE_CONFIG_HERE
@@ -582,8 +582,8 @@ if (firebaseConfig.apiKey === 'FIREBASE_CONFIG_HERE') {
   throw new Error('Firebase not configured');
 }
 
-const app = initializeApp(firebaseConfig);
-const db  = getDatabase(app);
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
 // ══════════════════════════════════════════════════════════
 // DB — Firebase Realtime Database
@@ -596,12 +596,12 @@ const DB = {
 
   // ── Players ──
   async getPlayers() {
-    const snap = await get(ref(db, 'players'));
+    const snap = await db.ref('players').get();
     return snap.exists() ? Object.values(snap.val()) : [];
   },
 
   async getPlayerById(id) {
-    const snap = await get(ref(db, `players/${id}`));
+    const snap = await db.ref(`players/${id}`).get();
     return snap.exists() ? snap.val() : null;
   },
 
@@ -612,16 +612,16 @@ const DB = {
     if (!p) {
       const id = 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
       p = { id, name: norm, wins: 0, losses: 0, matches_played: 0, created_at: Date.now() };
-      await set(ref(db, `players/${id}`), p);
+      await db.ref(`players/${id}`).set(p);
     }
     return p;
   },
 
   async updatePlayerStats(id, win) {
-    const snap = await get(ref(db, `players/${id}`));
+    const snap = await db.ref(`players/${id}`).get();
     if (!snap.exists()) return;
     const p = snap.val();
-    await update(ref(db, `players/${id}`), {
+    await db.ref(`players/${id}`).update( {
       matches_played: (p.matches_played || 0) + 1,
       wins:    win ? (p.wins    || 0) + 1 : (p.wins    || 0),
       losses: !win ? (p.losses  || 0) + 1 : (p.losses  || 0),
@@ -630,18 +630,18 @@ const DB = {
   },
 
   async deletePlayer(id) {
-    await remove(ref(db, `players/${id}`));
+    await db.ref(`players/${id}`).remove();
   },
 
   // ── Matches ──
   async getMatches() {
-    const snap = await get(ref(db, 'matches'));
+    const snap = await db.ref('matches').get();
     if (!snap.exists()) return [];
     return Object.values(snap.val()).sort((a,b) => b.created_at - a.created_at);
   },
 
   async getMatchById(id) {
-    const snap = await get(ref(db, `matches/${id}`));
+    const snap = await db.ref(`matches/${id}`).get();
     return snap.exists() ? snap.val() : null;
   },
 
@@ -653,17 +653,16 @@ const DB = {
         ? Object.fromEntries(match.rounds.map((r,i) => [i, r]))
         : null;
     }
-    await set(ref(db, `matches/${match.id}`), toSave);
+    await db.ref(`matches/${match.id}`).set(toSave);
   },
 
   // ── Realtime listener للمباراة ──
   listenMatch(matchId, callback) {
     DB.unlistenMatch(matchId);
-    const r = ref(db, `matches/${matchId}`);
-    const handler = onValue(r, snap => {
+    const r = db.ref(`matches/${matchId}`);
+    r.on('value', snap => {
       if (!snap.exists()) { callback(null); return; }
       const m = snap.val();
-      // تحويل rounds من object لـ array
       if (m.rounds && typeof m.rounds === 'object' && !Array.isArray(m.rounds)) {
         m.rounds = Object.values(m.rounds).sort((a,b) => b.created_at - a.created_at);
       } else if (!m.rounds) {
@@ -671,28 +670,24 @@ const DB = {
       }
       callback(m);
     });
-    DB._listeners[matchId] = { ref: r, handler };
+    DB._listeners[matchId] = r;
   },
 
   unlistenMatch(matchId) {
     if (DB._listeners[matchId]) {
-      off(DB._listeners[matchId].ref);
+      DB._listeners[matchId].off();
       delete DB._listeners[matchId];
     }
   },
 
-  // ── Realtime listener للاعبين ──
   listenPlayers(callback) {
-    const r = ref(db, 'players');
-    onValue(r, snap => {
+    db.ref('players').on('value', snap => {
       callback(snap.exists() ? Object.values(snap.val()) : []);
     });
   },
 
-  // ── Realtime listener للمباريات ──
   listenMatches(callback) {
-    const r = ref(db, 'matches');
-    onValue(r, snap => {
+    db.ref('matches').on('value', snap => {
       if (!snap.exists()) { callback([]); return; }
       const matches = Object.values(snap.val()).map(m => {
         if (m.rounds && typeof m.rounds === 'object' && !Array.isArray(m.rounds))
@@ -942,7 +937,7 @@ const App = {
     document.getElementById('input-a').focus();
 
     if (match.teamA_score_total>=match.target_score || match.teamB_score_total>=match.target_score) {
-      match.winner  = match.teamA_score_total>=match.target_score ? 'A' : 'B';
+      match.winner  = match.teamA_score_total>=match.target_score ? 'B' : 'A';
       match.status  = 'ended';
       match.ended_at= Date.now();
       await DB.saveMatch(match);
@@ -984,7 +979,7 @@ const App = {
     const match=await DB.getMatchById(currentAdminMatchId);
     if (!match) return;
     const tied=match.teamA_score_total===match.teamB_score_total;
-    match.winner=tied?null:(match.teamA_score_total>match.teamB_score_total?'A':'B');
+    match.winner=tied?null:(match.teamA_score_total>match.teamB_score_total?'B':'A');
     match.status='ended'; match.ended_at=Date.now();
     await DB.saveMatch(match);
     await App.finalizeMatch(match);
@@ -1002,7 +997,7 @@ const App = {
   },
 
   showWinOverlay(match) {
-    document.getElementById('win-team-name').textContent=match.winner==='A'?'فاز فريق لنا! 🎉':'فاز فريق لهم! 🎉';
+    document.getElementById('win-team-name').textContent=match.winner==='A'?'فاز فريق لنا! 🎉':'فاز فريق لهم! 🎉'; // B reached 250 = A wins
     document.getElementById('win-sub-text').textContent=`${match.teamA_score_total} — ${match.teamB_score_total}`;
     const rounds=match.rounds||[];
     document.getElementById('win-stat-rounds').textContent=rounds.length;
@@ -1088,7 +1083,7 @@ const App = {
     const tA=match.teamA_names?.join('، '), tB=match.teamB_names?.join('، ');
     if (!confirm(`إنهاء مباراة\n${tA} vs ${tB}\nالنتيجة: ${match.teamA_score_total||0} — ${match.teamB_score_total||0}\n\nتأكيد؟`)) return;
     const tied=match.teamA_score_total===match.teamB_score_total;
-    match.winner=tied?null:(match.teamA_score_total>match.teamB_score_total?'A':'B');
+    match.winner=tied?null:(match.teamA_score_total>match.teamB_score_total?'B':'A');
     match.status='ended'; match.ended_at=Date.now();
     await DB.saveMatch(match);
     await App.finalizeMatch(match);
@@ -1379,10 +1374,7 @@ async function init() {
 
 init();
 
-// expose to global scope (needed because of type="module")
-window.App = App;
-window.Router = Router;
-window.Toast = Toast;
+
 </script>
 </body>
 </html>
