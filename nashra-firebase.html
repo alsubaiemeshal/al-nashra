@@ -1380,8 +1380,19 @@ ${match.teamA_score_total||0} — ${match.teamB_score_total||0}
       return pB-pA || b.wins-a.wins;
     }).slice(0,3);
 
-    // أكثر انتصارات
-    const byWins = [...players].sort((a,b) => b.wins-a.wins || b.matches_played-a.matches_played).slice(0,3);
+    // أكثر فوز متتالي
+    const getStreak = (playerId) => {
+      const pMatches = cachedMatches.filter(m => m.status==='ended' && [...(m.teamA_players||[]),...(m.teamB_players||[])].includes(playerId));
+      let streak = 0;
+      for (const m of pMatches) {
+        const isA = (m.teamA_players||[]).includes(playerId);
+        if ((isA && m.winner==='A') || (!isA && m.winner==='B')) streak++;
+        else break;
+      }
+      return streak;
+    };
+    const playersWithStreak = players.map(p => ({ ...p, _streak: getStreak(p.id) }));
+    const byStreak = [...playersWithStreak].filter(p => p._streak > 0).sort((a,b) => b._streak - a._streak).slice(0,3);
 
     const medals = ['🥇','🥈','🥉'];
     const colors = ['#ffd700','#c0c0c0','#cd7f32'];
@@ -1403,15 +1414,15 @@ ${match.teamA_score_total||0} — ${match.teamB_score_total||0}
           }).join('')}
         </div>
         <div>
-          <div style="font-size:.7rem;font-weight:800;color:var(--green);letter-spacing:.5px;margin-bottom:8px">أكثر انتصارات</div>
-          ${byWins.map((p,i) => {
+          <div style="font-size:.7rem;font-weight:800;color:var(--green);letter-spacing:.5px;margin-bottom:8px">🔥 أكثر فوز متتالي</div>
+          ${byStreak.map((p,i) => {
             return `<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;margin-bottom:6px;cursor:pointer" onclick="App.showProfile('${p.id}')">
               <span style="font-size:1.1rem">${medals[i]}</span>
               <div style="flex:1;min-width:0">
                 <div style="font-size:.82rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.name}</div>
                 <div style="font-size:.7rem;color:var(--muted)">${p.matches_played} مباراة</div>
               </div>
-              <div style="font-size:.9rem;font-weight:900;color:${colors[i]}">${p.wins}ف</div>
+              <div style="font-size:.9rem;font-weight:900;color:${colors[i]}">${p._streak}🔥</div>
             </div>`;
           }).join('')}
         </div>
