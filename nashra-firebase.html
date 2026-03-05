@@ -685,6 +685,10 @@ const DB = {
     }
   },
 
+  async deleteMatch(matchId) {
+    await db.ref(`matches/${matchId}`).remove();
+  },
+
   listenPlayers(callback) {
     db.ref('players').on('value', snap => {
       callback(snap.exists() ? Object.values(snap.val()) : []);
@@ -1156,6 +1160,58 @@ const App = {
     if (confirm(`حذف "${name}"؟`)) { await DB.deletePlayer(id); Toast.show('تم الحذف','🗑️'); }
   },
 
+  async deleteMatch(matchId) {
+    const match = await DB.getMatchById(matchId);
+    if (!match) return;
+    if (match.status === 'active') { Toast.show('لا تقدر تحذف مباراة شغالة!','⚠️'); return; }
+    const tA = match.teamA_names?.join('، ') || '—';
+    const tB = match.teamB_names?.join('، ') || '—';
+    if (!confirm(`حذف مباراة
+${tA} vs ${tB}
+${match.teamA_score_total||0} — ${match.teamB_score_total||0}
+
+سيتم إلغاء نتائجها من إحصائيات اللاعبين. تأكيد؟`)) return;
+
+    // عكس إحصائيات اللاعبين
+    const wP = match.winner==='A' ? match.teamA_players : match.winner==='B' ? match.teamB_players : [];
+    const lP = match.winner==='A' ? match.teamB_players : match.winner==='B' ? match.teamA_players : [];
+    await Promise.all([
+      ...wP.map(async id => {
+        const snap = await db.ref(`players/${id}`).get();
+        if (!snap.exists()) return;
+        const p = snap.val();
+        await db.ref(`players/${id}`).update({
+          matches_played: Math.max(0, (p.matches_played||0) - 1),
+          wins: Math.max(0, (p.wins||0) - 1),
+          updated_at: Date.now()
+        });
+      }),
+      ...lP.map(async id => {
+        const snap = await db.ref(`players/${id}`).get();
+        if (!snap.exists()) return;
+        const p = snap.val();
+        await db.ref(`players/${id}`).update({
+          matches_played: Math.max(0, (p.matches_played||0) - 1),
+          losses: Math.max(0, (p.losses||0) - 1),
+          updated_at: Date.now()
+        });
+      }),
+      ...(!match.winner ? [...(match.teamA_players||[]),...(match.teamB_players||[])].map(async id => {
+        const snap = await db.ref(`players/${id}`).get();
+        if (!snap.exists()) return;
+        const p = snap.val();
+        await db.ref(`players/${id}`).update({
+          matches_played: Math.max(0, (p.matches_played||0) - 1),
+          losses: Math.max(0, (p.losses||0) - 1),
+          updated_at: Date.now()
+        });
+      }) : [])
+    ]);
+
+    await DB.deleteMatch(matchId);
+    Toast.show('تم حذف المباراة وإلغاء نتائجها','🗑️');
+  },
+
   // ── PROFILE ──
   showProfile(playerId) { Router.navigate('/p/'+playerId); },
 
@@ -1249,9 +1305,13 @@ const App = {
         ? '<span class="status-badge status-active" style="font-size:.7rem;padding:2px 8px"><span class="status-dot"></span>شغالة</span>'
         : '<span class="status-badge status-ended" style="font-size:.7rem;padding:2px 8px"><span class="status-dot"></span>انتهت</span>';
       const winner=m.winner==='A'?'🏆 فاز لنا':m.winner==='B'?'🏆 فاز لهم':'';
+      const deleteBtn = m.status==='ended' && App.isAdminAuthed()
+        ? `<button onclick="event.stopPropagation();App.deleteMatch('${m.id}')" style="margin-top:8px;width:100%;min-height:34px;background:rgba(255,107,107,.1);border:1px solid rgba(255,107,107,.25);border-radius:8px;color:#ff6b6b;font-family:'Tajawal',sans-serif;font-size:.8rem;font-weight:700;cursor:pointer">🗑️ حذف المباراة</button>`
+        : '';
       return `<div class="matches-item" onclick="Router.navigate('/m/${m.id}')">
         <div class="matches-teams"><span>${m.teamA_names?.join('،')}</span><span style="color:var(--muted);font-weight:400">vs</span><span>${m.teamB_names?.join('،')}</span></div>
         <div class="matches-meta flex-between"><span>${date} · ${m.rounds_count||0} جولة · ${m.teamA_score_total||0}–${m.teamB_score_total||0} ${winner}</span>${sBadge}</div>
+        ${deleteBtn}
       </div>`;
     }).join('');
   },
